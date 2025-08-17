@@ -1,0 +1,32 @@
+.footer {
+    background-color: var(--base--black);
+    color: white;
+    padding: 60px 30px; /* Increased padding for more space */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.footerBottom {
+    text-align: center;
+    margin-top: 20px;
+    border-top: 1px solid #444;
+    width: 100%;
+    padding-top: 15px; /* Adjusted padding for better spacing */
+    font-size: 14px; /* Set a smaller font size for copyright text */
+    line-height: 1.4; /* Adjusted line height for readability */
+}
+
+
+/* Responsive Styles for Smaller Screens */
+@media (max-width: 768px) {
+    .footerBottom {
+        font-size: 12px; /* Smaller font size for copyright */
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: 40px 20px; /* Reduce padding for very small screens */
+    }
+}

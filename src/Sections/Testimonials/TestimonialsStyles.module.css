@@ -1,0 +1,133 @@
+.testimonials {
+    background-color: var(--button--hover); /* Professional and clean background */
+    padding: 25px;
+    text-align: center;
+    padding-bottom: 40px;
+}
+
+.heading {
+    font-size: 2.5rem;
+    color: white; /* Navy blue for a professional look */
+    margin-bottom: 30px;
+}
+
+.testimonialGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.testimonialCard {
+    background: white;
+    border: 1px solid #d9e2ec;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    position: relative;
+}
+
+.feedback {
+    font-style: italic;
+    color: #272727;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 10px 0 5px;
+    color: #272727;
+}
+
+.title {
+    font-size: 1rem;
+    color: #272727;
+    margin-bottom: 20px;
+}
+
+.ctaGroup {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.cta {
+    font-size: 0.9rem;
+    color: #272727;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: bold;
+}
+
+.cta:hover {
+    color: #272727;
+    text-decoration: underline;
+}
+
+.rating {
+    color: #ffd700; /* Gold color for stars */
+    font-size: 1.2rem;
+    margin: 10px 0;
+    display: flex;
+    gap: 5px;
+}
+
+
+
+/* Media Query for Small Screens */
+@media (max-width: 760px) {
+    .heading {
+        font-size: 2rem; /* Reduce heading size for smaller screens */
+        margin-bottom: 30px;
+    }
+
+    .testimonialGrid {
+        grid-template-columns: 1fr; /* Stack testimonials vertically */
+    }
+
+    .testimonialCard {
+        padding: 15px; /* Less padding for smaller screens */
+    }
+
+    .name {
+        font-size: 1rem; /* Adjust name font size */
+    }
+
+    .title {
+        font-size: 0.9rem; /* Adjust title font size */
+    }
+
+    .ctaGroup {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cta {
+        font-size: 0.8rem;
+    }
+}
+
+/* Media Query for Extra Small Screens (Mobile) */
+@media (max-width: 480px) {
+    .heading {
+        font-size: 1.8rem; /* Further reduce heading size */
+    }
+
+    .testimonialCard {
+        padding: 10px; /* Reduce padding further for mobile screens */
+    }
+
+    .feedback {
+        font-size: 0.9rem; /* Adjust feedback font size */
+    }
+
+    .cta {
+        font-size: 0.7rem;
+    }
+}

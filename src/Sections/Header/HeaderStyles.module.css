@@ -1,0 +1,259 @@
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  color: var(--text--white);
+  z-index: 1000;
+  height: 7rem;
+  background: linear-gradient(#070d13b8,#070d133d);
+}
+
+.sub {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  grid-column-gap: 2rem;
+  grid-row-gap: 2rem;
+  padding: 0 60px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.logoImage {
+  width: 50px;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  padding: 5px 0;
+  border-radius: 40px;
+}
+
+.logoName {
+  font-size: 27px;
+  font-family: var(--font--primary);
+  color: var(--text--white);
+}
+
+.navBlock {
+  margin-left: auto;
+}
+
+.nav {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+}
+
+.nav a {
+  display: flex;
+  gap: 10px;
+  text-decoration: none;
+  font-weight: 500;
+  color: var(--text--white);
+  border-radius: 0.5rem;
+  justify-content: flex-start;
+  align-items: center;
+  height: 2.5rem;
+  padding: 0 0.875rem;
+  font-size: 18px;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.nav a:hover {
+  background-color: var(--button--hover);
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdownLink {
+  display: flex;
+  align-items: center;
+}
+
+.dropdownMenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--base--white);
+  border-radius: 0.5rem;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 100%;
+  width: 100%;
+  z-index: 1000;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.dropdownMenu a {
+  color: var(--text--black);
+  text-decoration: none;
+  transition: background-color 0.2s ease-in-out;
+  padding: 2rem 1rem;
+  font-weight: 400;
+  border-bottom: 1px solid var(--base--accent);
+}
+
+.dropdownMenu a:last-child {
+  border-bottom: none;
+}
+
+.dropdown:hover .dropdownMenu {
+  display: flex;
+}
+
+.dropdownMenu a:hover {
+  color: var(--text--white);
+}
+
+.separator {
+  background-color: var(--button--hover);
+  width: 1px;
+  min-width: 1px;
+  height: 1.5rem;
+  min-height: 1.5rem;
+}
+
+.requestButton {
+  background-color: var(--button--primary);
+  color: var(--text--white);
+  border-radius: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  height: 3rem;
+  padding: 0 1rem;
+  transition: background-color 0.2s;
+  font-size: 18px;
+  font-weight: 500;
+  border: none;
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+}
+
+.requestButton:hover {
+  background-color: var(--button--hover);
+}
+
+.insightsLink {
+  position: absolute;
+  top: 100%;
+  right: 2%;
+  transform: translateX(-50%);
+  text-decoration: none;
+  color: var(--text--black);
+  font-size: 18px;
+  font-weight: 400;
+  width: 10ch;
+  text-align: center;
+  background-color: var(--base--white);
+  padding: 8px 10px 10px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  font-family: var(--font--primary);
+}
+
+.insightsLink:hover {
+  color: var(--base--primary);
+}
+
+.menuIcon {
+  display: none;
+  cursor: pointer;
+  font-size: 24px;
+  background-color: var(--button--primary);
+  border: none;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sub {
+    padding: 20px;
+  }
+
+  .nav {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    background-color: var(--base--black);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    padding: 0;
+    z-index: 1000;
+  }
+
+  .nav a {
+    color: var(--text--white);
+    text-align: center;
+    padding: 32px 25px;
+    font-size: 15px;
+    border-bottom: 1px solid var(--base--accent);
+    border-radius: 0;
+  }
+
+  .showMenu .nav {
+    display: flex;
+  }
+
+  .menuIcon {
+    display: block;
+    font-weight: 500;
+    font-size: 15px;
+    border-bottom: 0.5px solid var(--base--accent);
+    padding: 8px 15px;
+    border-bottom-left-radius: 17px;
+    border-bottom-right-radius: 17px;
+  }
+
+  .menu {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3px;
+  }
+
+  .separator {
+    display: none;
+  }
+
+  .requestButton {
+    display: none;
+  }
+
+  .insightsLink {
+    top: 100%;
+    right: 1%;
+    font-size: 16px;
+    padding: 0.6rem 1rem;
+  }
+
+  .dropdownMenu {
+    position: relative;
+    top: auto;
+    width: 100%;
+    left: 0;
+    padding: 0;
+  }
+
+  .dropdownMenu a {
+    padding: 1.5rem 1rem;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 0;
+    color: var(--text--black);
+  }
+}

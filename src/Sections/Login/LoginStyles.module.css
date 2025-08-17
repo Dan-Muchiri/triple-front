@@ -1,0 +1,146 @@
+/*Login styles*/
+.loginContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: var(--base--white);
+}
+
+
+.loginTitle {
+  font-family: var(--font--primary);
+  font-size: 2.5rem;
+  color: var(--base--primary);
+  margin-bottom: 30px;
+}
+
+.loginForm {
+  background-color: rgb(250, 244, 244);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.formField {
+  margin-bottom: 15px;
+}
+
+.formField label {
+  display: block;
+  font-family: var(--font--secondary);
+  color: var(--text--black);
+  margin-bottom: 5px;
+}
+
+.formInput {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid gray;
+  font-size: 1rem;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--base--primary);
+  box-shadow: 0 0 5px var(--base--primary);
+}
+
+.errorMessage {
+  color: var(--base--primary);
+  font-size: 0.875rem;
+  margin-top: 5px;
+}
+
+.formButton {
+  background-color: var(--button--primary);
+  color: var(--text--white);
+  border-radius: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  height: 3rem;
+  padding: 0 1rem;
+  transition: background-color 0.2s;
+  font-size: 18px;
+  font-weight: 500;
+  border: none;
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+}
+
+.formButton:hover {
+  background-color: var(--button--hover);
+}
+
+.formButton:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}
+
+
+
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+  .header {
+    padding: 0 20px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .logo {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .loginButton {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+
+  .loginContainer {
+    padding: 60px 20px;
+  }
+
+  .loginTitle {
+    font-size: 1.8rem;
+  }
+
+  .loginForm {
+    padding: 1.5rem;
+    max-width: 90%;
+  }
+
+  .formInput {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+
+  .formButton {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  .backButton {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: fit-content;
+    font-size: 14px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+  }
+
+  .footer {
+    font-size: 12px;
+    padding: 10px;
+  }
+}
