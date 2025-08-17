@@ -38,7 +38,7 @@ function Contact() {
                     </div>
             <div className={styles.wrapper}>
                 <div className={styles.right}>
-                    <form action="" method="post" className={styles.formContainer} onSubmit={handleSubmit}>
+                    <form action="https://formspree.io/f/xwpqjljd" method="post" className={styles.formContainer} onSubmit={handleSubmit}>
                         <div className={styles.formGroup}>
                             <label htmlFor="name">Name<span className={styles.required}>*</span></label>
                             <input
@@ -101,14 +101,13 @@ function Contact() {
 
                         <div className={styles.contactItem}>
                             <strong>Email:</strong>
-                            <p>triple-ts-mediclinic@gmail.com</p>
+                            <p>info@tripletsmediclinic.co.ke</p>
                             <span>We'll respond within 24 hours</span>
                         </div>
 
                         <div className={styles.contactItem}>
                             <strong>Hours:</strong>
-                            <p>Monday - Friday: 8:00 AM - 8:00 PM</p>
-                            <p>Saturday: 9:00 AM - 5:00 PM</p>
+                            <p>Monday - Saturday: 8:00 AM - 7:00 PM</p>
                             <p>Sunday: Closed</p>
                         </div>
 
