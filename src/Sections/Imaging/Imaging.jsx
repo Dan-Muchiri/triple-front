@@ -44,37 +44,82 @@ function Imaging() {
   }, [fetchVisits]);
 
   const fetchTestRequests = async (visitId) => {
-    try {
-      const res = await fetch(`https://tripletsmediclinic.onrender.com/${visitId}`);
-      const data = await res.json();
+  try {
+    const res = await fetch(`https://tripletsmediclinic.onrender.com/visits/${visitId}`);
+    const data = await res.json();
 
-      if (data && data.test_requests) {
-        const imagingTests = data.test_requests.filter(
-          (t) => t.category === "imaging"
-        );
-        setTestRequests(imagingTests);
-      } else {
-        setTestRequests([]);
-      }
-    } catch (err) {
-      console.error("Failed to fetch test requests:", err);
+    if (data) {
+      // merge normal and direct test requests
+      const allTests = [
+        ...(data.test_requests || []),
+        ...(data.direct_test_requests || []),
+      ];
+
+      // only keep imaging category tests
+      const imagingTests = allTests.filter((t) => t.category === "imaging");
+
+      setTestRequests(imagingTests);
+    } else {
+      setTestRequests([]);
     }
-  };
+  } catch (err) {
+    console.error("Failed to fetch imaging test requests:", err);
+  }
+};
 
-  const handleCompleteVisit = async () => {
-    try {
-      await fetch(`https://tripletsmediclinic.onrender.com/visits/${selectedVisit.id}`, {
+
+ const handleCompleteVisit = async () => {
+  try {
+    // 1. Fetch the full visit with all its test requests + direct test requests + consultation info
+    const res = await fetch(`https://tripletsmediclinic.onrender.com/visits/${selectedVisit.id}`);
+    const visitData = await res.json();
+
+    let nextStage = "reception"; // default fallback
+
+    // 2. Merge normal + direct test requests
+    const allTests = [
+      ...(visitData.test_requests || []),
+      ...(visitData.direct_test_requests || []),
+    ];
+
+    // 3. Check if there are pending lab test requests
+    const pendingLab = allTests.some(
+      (t) => t.category === "lab" && t.status === "pending"
+    );
+
+    if (pendingLab) {
+      nextStage = "waiting_lab"; // ✅ send to imaging if lab requests exist
+    } else if (!visitData.consultation) {
+      // 4. No consultation yet
+      nextStage = "reception";
+    } else {
+      // 5. Consultation exists
+      nextStage = "waiting_consultation";
+    }
+
+    // 6. Update visit stage
+    const updateRes = await fetch(
+      `https://tripletsmediclinic.onrender.com/visits/${selectedVisit.id}`,
+      {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage: "waiting_consultation" }),
-      });
-      alert("Visit updated to consultation.");
-      setActiveView("waitingImaging");
-    } catch (error) {
-      console.error("Error updating visit:", error);
-      alert("Failed to update visit stage.");
+        body: JSON.stringify({ stage: nextStage }),
+      }
+    );
+
+    if (!updateRes.ok) {
+      throw new Error("Failed to update visit stage");
     }
-  };
+
+    alert(`Visit updated to ${nextStage.replace("_", " ")}.`);
+    setActiveView("waitingImaging"); // ✅ imaging view here
+  } catch (error) {
+    console.error("Error updating visit:", error);
+    alert("Failed to update visit stage.");
+  }
+};
+
+
 
   const handleViewTests = (visit) => {
     setSelectedVisit(visit);

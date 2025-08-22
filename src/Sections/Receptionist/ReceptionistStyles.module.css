@@ -438,6 +438,23 @@
 
 
 
+.infoBtn {
+  background-color: #3498db;
+  color: white;
+}
+
+.visitBtn {
+  background-color: #27ae60;
+  color: white;
+}
+
+.testBtn {
+  background-color: #e67e22;
+  color: white;
+}
+
+
+
 /* Responsive tweaks */
 @media (max-width: 768px) {
   .dashboardWrapper {

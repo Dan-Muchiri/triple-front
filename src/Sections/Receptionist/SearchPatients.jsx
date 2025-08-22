@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import styles from "./ReceptionistStyles.module.css";
 
+
 export default function SearchPatients({
   fetchPatients,
   patients,
-  visits,
-  setSelectedVisit,
-  setActiveView,
   startVisit,
 }) {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  
+  const [selectedPatient, setSelectedPatient] = useState(null); // for Info
+  
   const [serverError, setServerError] = useState("");
 
   useEffect(() => {
@@ -33,6 +33,9 @@ export default function SearchPatients({
             p.last_name.toLowerCase().includes(search.toLowerCase()))
       )
     : [];
+
+    
+
 
   return (
     <div className={`${styles.sectionBox} ${styles.flexOne}`}>
@@ -57,8 +60,9 @@ export default function SearchPatients({
                 ({patient.age} yrs)
               </div>
               <div className={styles.patientCardActions}>
+                {/* Info */}
                 <button
-                  className={`${styles.btn} ${styles.visitBtn}`}
+                  className={`${styles.btn} ${styles.infoBtn}`}
                   onClick={() => {
                     setSelectedPatient(patient);
                     setServerError("");
@@ -67,12 +71,15 @@ export default function SearchPatients({
                 >
                   Info
                 </button>
+
+                {/* Start Visit */}
                 <button
                   onClick={() => startVisit(patient.id)}
                   className={`${styles.btn} ${styles.visitBtn}`}
                 >
                   Start Visit
                 </button>
+
               </div>
             </li>
           ))
@@ -195,6 +202,8 @@ export default function SearchPatients({
           </div>
         </div>
       )}
+
+      
     </div>
   );
 }

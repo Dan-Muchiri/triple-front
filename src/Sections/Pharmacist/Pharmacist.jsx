@@ -6,6 +6,8 @@ import * as Yup from "yup";
 import useAuthStore from "../AuthStore/Authstore";
 import { FaBars } from "react-icons/fa";
 import Medicines from "./Medicines";
+import OtcSales from "./OtcSales";
+import PharmacyExpenses from "./Expenses";
 
 function Pharmacist() {
   const [visits, setVisits] = useState([]);
@@ -30,11 +32,20 @@ function Pharmacist() {
 
   const fetchVisits = useCallback(async () => {
     try {
+      // fetch normal visits
       const res = await fetch("https://tripletsmediclinic.onrender.com/visits");
       const data = await res.json();
-      setVisits(data.filter((v) => v.stage === "waiting_pharmacy"));
+      const waitingVisits = data.filter((v) => v.stage === "waiting_pharmacy");
+
+      // fetch OTC sales
+      const otcRes = await fetch("https://tripletsmediclinic.onrender.com/otc_sales");
+      const otcData = await otcRes.json();
+      const waitingOtc = otcData.filter((s) => s.stage === "waiting_pharmacy");
+
+      // merge both
+      setVisits([...waitingVisits, ...waitingOtc]);
     } catch (err) {
-      console.error("Failed to fetch visits:", err);
+      console.error("Failed to fetch visits or OTC sales:", err);
     }
   }, []);
 
@@ -126,6 +137,11 @@ function Pharmacist() {
     switch (activeView) {
       case "medicines":
         return <Medicines />;
+      case "pharmacyExpense":
+        return <PharmacyExpenses />;
+
+      case "otcSale": // 👈 add this
+        return <OtcSales setActiveView={setActiveView} />;
 
       case "prescriptions":
         return (
@@ -317,37 +333,55 @@ function Pharmacist() {
                   No patients waiting for pharmacy.
                 </li>
               ) : (
-                visits.map((visit) => (
-                  <li key={visit.id} className={styles.patientCard}>
+                visits.map((item) => (
+                  <li key={item.id} className={styles.patientCard}>
                     <div>
-                      {visit.patient.first_name} {visit.patient.last_name} (
-                      {visit.patient.age} yrs)
-                    </div>
-                    <div>
-                      Created: {new Date(visit.created_at).toLocaleString()}
+                      {"patient" in item
+                        ? `${item.patient.first_name} ${item.patient.last_name} (${item.patient.age} yrs)`
+                        : `OTC: ${item.patient_name}`}
                     </div>
 
-                    {/* ✅ Stage Selection */}
+                    <div>
+                      Created: {new Date(item.created_at).toLocaleString()}
+                    </div>
+
+                    {/* ✅ Show sales if OTC sale */}
+                    {"sales" in item && item.sales.length > 0 && (
+                      <div className={styles.medicineList}>
+                        <strong>Medicines:</strong>
+                        <ul>
+                          {item.sales.map((sale) => (
+                            <li key={sale.id}>
+                              {sale.medication_name} ({sale.dispensed_units}{" "}
+                              {sale.dispensed_units > 1 ? "units" : "unit"}) —
+                              KES {sale.total_price}
+                            </li>
+                          ))}
+                        </ul>
+                        <div className={styles.sectionTitle}></div>
+                      </div>
+                    )}
+
                     <div className={styles.stageControl}>
                       <label>Stage:</label>
                       <select
-                        value={visit.stage}
+                        value={item.stage}
                         onChange={async (e) => {
                           const newStage = e.target.value;
                           try {
+                            const endpoint =
+                              "patient" in item ? "visits" : "otc_sales";
                             const res = await fetch(
-                              `https://tripletsmediclinic.onrender.com/visits/${visit.id}`,
+                              `https://tripletsmediclinic.onrender.com/${endpoint}/${item.id}`,
                               {
                                 method: "PATCH",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                },
+                                headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({ stage: newStage }),
                               }
                             );
                             if (!res.ok)
                               throw new Error("Failed to update stage");
-                            await fetchVisits(); // refresh list
+                            await fetchVisits();
                           } catch (err) {
                             console.error("Stage update failed:", err);
                           }
@@ -361,12 +395,14 @@ function Pharmacist() {
                       </select>
                     </div>
 
-                    <button
-                      className={styles.btn}
-                      onClick={() => handleViewPrescriptions(visit)}
-                    >
-                      View Prescriptions
-                    </button>
+                    {"patient" in item && (
+                      <button
+                        className={styles.btn}
+                        onClick={() => handleViewPrescriptions(item)}
+                      >
+                        View Prescriptions
+                      </button>
+                    )}
                   </li>
                 ))
               )}
@@ -396,6 +432,23 @@ function Pharmacist() {
           >
             Waiting Pharmacy
           </button>
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "otcSale" ? styles.active : ""
+            }`}
+            onClick={() => setActiveView("otcSale")}
+          >
+            New OTC Sale
+          </button>
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "pharmacyExpense" ? styles.active : ""
+            }`}
+            onClick={() => setActiveView("pharmacyExpense")}
+          >
+            New Pharmacy Expense
+          </button>
+
           <button
             className={`${styles.navBtn} ${
               activeView === "medicines" ? styles.active : ""

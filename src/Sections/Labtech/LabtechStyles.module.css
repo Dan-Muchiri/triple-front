@@ -216,6 +216,28 @@
   display: block;
 }
 
+.readOnly {
+  background-color: #f0f0f0; /* light gray */
+  color: #555; /* slightly muted text */
+}
+
+.lowStockBadge {
+  background: #ffcccc;
+  color: #b30000;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  margin-left: 6px;
+  border-radius: 6px;
+}
+
+.lowStockCard {
+  border: 2px solid #ff6666; /* highlights low stock */
+  background: #fff5f5;
+}
+
+
+
 @media (max-width: 768px) {
   .dashboardWrapper {
     flex-direction: column;

@@ -2,47 +2,34 @@ import React, { useState, useEffect } from "react";
 import styles from "./ReceptionistStyles.module.css";
 import useAuthStore from "../AuthStore/Authstore";
 
-export default function AddPayment({ visit, setActiveView, paymentTarget }) {
+export default function AddPayment({ visit, setActiveView }) {
   const receptionistId = useAuthStore((state) => state.userId);
 
   const [form, setForm] = useState({
-    service_type: "",
     amount: "",
     payment_method: "cash",
     mpesa_receipt: "",
   });
 
-  useEffect(() => {
-  if (paymentTarget && visit) {
-    let serviceName = "";
-    let amount = "";
-
-    if (paymentTarget.type === "test" && visit.test_requests) {
-      const test = visit.test_requests.find((t) => t.id === paymentTarget.id);
-      serviceName = test?.test_type || "Lab Test";
-      amount = test?.price || 0;
-    } else if (paymentTarget.type === "prescription" && visit.prescriptions) {
-      const prescription = visit.prescriptions.find(
-        (p) => p.id === paymentTarget.id
-      );
-      serviceName = prescription?.medication_name || "Prescription";
-      amount = prescription?.price || 0; // ✅ optional, if prescriptions have price
-    } else if (paymentTarget.type === "consultation") {
-      serviceName = "Consultation Fee";
-      amount = 200;
-    }
-
-    setForm((prev) => ({
-      ...prev,
-      service_type: serviceName,
-      amount: amount,
-    }));
-  }
-}, [paymentTarget, visit]);
-
-
   const [paymentId, setPaymentId] = useState(null);
   const [serverError, setServerError] = useState("");
+
+  // Auto-fill amount with backend balance
+  useEffect(() => {
+    if (visit) {
+      if (visit.presetService === "consultation_fee") {
+        setForm((prev) => ({
+          ...prev,
+          amount: 200,
+        }));
+      } else {
+        setForm((prev) => ({
+          ...prev,
+          amount: visit.balance || 0,
+        }));
+      }
+    }
+  }, [visit]);
 
   useEffect(() => {
     if (serverError) {
@@ -55,15 +42,29 @@ export default function AddPayment({ visit, setActiveView, paymentTarget }) {
     e.preventDefault();
     setServerError("");
 
+    const isConsultFee = visit.presetService === "consultation_fee";
+    const isOtc = visit.isOtc;
+
     const payload = {
-      ...form,
       amount: parseFloat(form.amount),
-      visit_id: visit.id,
       receptionist_id: receptionistId,
-      test_request_id: paymentTarget?.type === "test" ? paymentTarget.id : null,
-      prescription_id:
-        paymentTarget?.type === "prescription" ? paymentTarget.id : null,
+      payment_method: form.payment_method,
+      mpesa_receipt:
+        form.payment_method === "mpesa" ? form.mpesa_receipt : null,
+      service_type: isConsultFee
+        ? "Consultation Fee"
+        : isOtc
+        ? "OTC Payment"
+        : "Visit Payment",
+      service_amount: isConsultFee ? 200 : null,
     };
+
+    // ✅ Different foreign key depending on type
+    if (isOtc) {
+      payload.otc_sale_id = visit.id;
+    } else {
+      payload.visit_id = visit.id;
+    }
 
     try {
       const res = await fetch("https://tripletsmediclinic.onrender.com/payments", {
@@ -94,7 +95,7 @@ export default function AddPayment({ visit, setActiveView, paymentTarget }) {
     return (
       <div className={styles.sectionBox}>
         <h2 className={styles.sectionTitle}>Payment Recorded Successfully!</h2>
-        <div className={ `${styles.modalActions} ${styles.buttonGroup}`}>
+        <div className={`${styles.modalActions} ${styles.buttonGroup}`}>
           <a
             href={`https://tripletsmediclinic.onrender.com/receipt/${paymentId}`}
             target="_blank"
@@ -118,6 +119,60 @@ export default function AddPayment({ visit, setActiveView, paymentTarget }) {
     <div className={`${styles.sectionBox} ${styles.flexOne}`}>
       <h2 className={styles.sectionTitle}>Add Payment for Visit #{visit.id}</h2>
 
+      {/* Services Breakdown */}
+      {/* Services Breakdown */}
+      <div className={styles.formGroup}>
+        <label>Services</label>
+        <ul>
+          {visit.isOtc ? (
+            <>
+              {visit.sales?.map((s) => (
+                <li key={`sale-${s.id}`}>
+                  💊 {s.medication_name} × {s.dispensed_units} — KES{" "}
+                  {s.total_price}
+                </li>
+              ))}
+            </>
+          ) : (
+            <>
+              {visit.consultation && (
+                <li key={`consult-fee-${visit.consultation.id}`}>
+                  🩺 Consultation Fee — KES {visit.consultation.fee}
+                </li>
+              )}
+              {visit.direct_test_requests?.map((t) => (
+                <li key={`direct-test-${t.id}`}>
+                  🧪 {t.test_type} — KES {t.price}
+                </li>
+              ))}
+              {visit.test_requests?.map((t) => (
+                <li key={`consult-test-${t.id}`}>
+                  🧪 {t.test_type} — KES {t.price}
+                </li>
+              ))}
+              {visit.prescriptions?.map((p) => (
+                <li key={`pres-${p.id}`}>
+                  💊 {p.medication_name} × {p.dispensed_units} — KES{" "}
+                  {p.price}
+                </li>
+              ))}
+            </>
+          )}
+        </ul>
+      </div>
+
+      <p>
+        <strong>Total Charges:</strong> KES{" "}
+        {visit.total_charges}
+      </p>
+      <p>
+        <strong>Total Payments:</strong> KES {visit.total_payments || 0}
+      </p>
+      <p>
+        <strong>Balance:</strong> KES{" "}
+        {visit.balance}
+      </p>
+
       {serverError && (
         <div className={styles.error} style={{ marginBottom: "1rem" }}>
           {serverError}
@@ -125,17 +180,6 @@ export default function AddPayment({ visit, setActiveView, paymentTarget }) {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label>Service Type</label>
-          <input
-            type="text"
-            value={form.service_type}
-            onChange={(e) => setForm({ ...form, service_type: e.target.value })}
-            className={styles.input}
-            required
-          />
-        </div>
-
         <div className={styles.formGroup}>
           <label>Amount (KES)</label>
           <input
@@ -178,19 +222,13 @@ export default function AddPayment({ visit, setActiveView, paymentTarget }) {
 
         <div className={styles.modalActions}>
           <div className={`${styles.buttonGroup}`}>
-            <button
-              type="submit"
-              className={`${styles.btn}`}
-            >
+            <button type="submit" className={`${styles.btn}`}>
               Record Payment
             </button>
             <button
               type="button"
               className={`${styles.btn} ${styles.closeBtn}`}
-              onClick={() => {
-                setServerError("");
-                setActiveView("visits");
-              }}
+              onClick={() => setActiveView("visits")}
             >
               Cancel
             </button>

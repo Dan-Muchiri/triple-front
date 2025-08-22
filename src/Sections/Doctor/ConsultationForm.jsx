@@ -129,7 +129,7 @@ export default function ConsultationForm({
 
   // ---- Helpers ----
   const api = (path, opts = {}) =>
-    fetch(`https://tripletsmediclinic.onrender.com/${path}`, {
+    fetch(`https://tripletsmediclinic.onrender.com${path}`, {
       headers: { "Content-Type": "application/json" },
       ...opts,
     });

@@ -40,15 +40,23 @@ export default function Receptionist() {
   }, []);
 
   const fetchVisits = useCallback(async () => {
-    try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com/visits");
-      if (!res.ok) throw new Error("Failed to fetch visits");
-      const data = await res.json();
-      setVisits(data);
-    } catch (error) {
-      console.error("Error fetching visits:", error);
-    }
-  }, []);
+  try {
+    // normal visits
+    const res = await fetch("https://tripletsmediclinic.onrender.com/visits");
+    const visitsData = await res.json();
+
+    // OTC sales
+    const otcRes = await fetch("https://tripletsmediclinic.onrender.com/otc_sales");
+    const otcData = await otcRes.json();
+
+    // merge both
+    setVisits([...visitsData, ...otcData]);
+  } catch (err) {
+    console.error("Failed to fetch visits or OTC sales:", err);
+  }
+}, []);
+
+  
 
   const startVisit = async (patientId) => {
     try {
@@ -61,18 +69,24 @@ export default function Receptionist() {
       const data = await res.json();
       setSelectedVisit(data.visit);
       await fetchVisits();
-      setPaymentTarget({ type: "consultation" });
-      setActiveView("addPayment");
+      setActiveView("Visits");
     } catch (err) {
       console.error("Start visit error:", err);
     }
   };
 
-  const handlePay = (type, itemId, visit) => {
-    setSelectedVisit(visit);
-    setPaymentTarget({ type, id: itemId });
+  const handlePay = (item) => {
+  if ("patient" in item) {
+    // Regular visit
+    setSelectedVisit(item);
     setActiveView("addPayment");
-  };
+  } else {
+    // OTC sale
+    setSelectedVisit({ ...item, isOtc: true });
+    setActiveView("addPayment");
+  }
+};
+
 
   useEffect(() => {
     fetchPatients();
@@ -101,7 +115,6 @@ export default function Receptionist() {
           <AddPayment
             visit={selectedVisit}
             setActiveView={setActiveView}
-            paymentTarget={paymentTarget}
           />
         );
       case "search":

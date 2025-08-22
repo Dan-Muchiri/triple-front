@@ -6,6 +6,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import useAuthStore from "../AuthStore/Authstore";
 import { FaBars } from "react-icons/fa";
+import AdminAnalytics from "./Analytics";
 
 const roles = [
   "receptionist",
@@ -19,7 +20,7 @@ const roles = [
 
 function Admin() {
   const [users, setUsers] = useState([]);
-  const [activeView, setActiveView] = useState("userList");
+  const [activeView, setActiveView] = useState("analytics");
   const [selectedUser, setSelectedUser] = useState(null);
   const [serverError, setServerError] = useState("");
 
@@ -41,7 +42,7 @@ function Admin() {
   // Fetch all users
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com//users");
+      const res = await fetch("https://tripletsmediclinic.onrender.com/users");
       const data = await res.json();
       setUsers(data);
     } catch (err) {
@@ -80,8 +81,8 @@ function Admin() {
       try {
         const method = selectedUser ? "PATCH" : "POST";
         const url = selectedUser
-          ? `https://tripletsmediclinic.onrender.com//users/${selectedUser.id}`
-          : "https://tripletsmediclinic.onrender.com//users";
+          ? `https://tripletsmediclinic.onrender.com/users/${selectedUser.id}`
+          : "https://tripletsmediclinic.onrender.com/users";
 
         const payload = selectedUser
           ? {
@@ -137,7 +138,7 @@ function Admin() {
   const handleDeleteUser = async (userId) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await fetch(`https://tripletsmediclinic.onrender.com/${userId}`, {
+      await fetch(`https://tripletsmediclinic.onrender.com/users/${userId}`, {
         method: "DELETE",
       });
       await fetchUsers();
@@ -253,9 +254,10 @@ function Admin() {
             </div>
           </form>
         );
-
-      case "userList":
+      case "analytics":
       default:
+        return <AdminAnalytics />;
+      case "userList":
         return (
           <div className={styles.sectionBox}>
             <h2 className={styles.sectionTitle}>All Users</h2>
@@ -315,6 +317,15 @@ function Admin() {
         <nav
           className={`${styles.navMenu} ${isMenuOpen ? styles.showMenu : ""}`}
         >
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "analytics" ? styles.active : ""
+            }`}
+            onClick={() => setActiveView("analytics")}
+          >
+            Analytics
+          </button>
+
           <button
             className={`${styles.navBtn} ${
               activeView === "userList" ? styles.active : ""
