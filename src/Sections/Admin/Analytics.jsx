@@ -176,6 +176,7 @@ function AdminAnalytics() {
               <th>Date</th>
               <th>Medicine</th>
               <th>Quantity Added</th>
+              <th>Discount (Ksh)</th>
               <th>Total Cost</th>
             </tr>
           </thead>
@@ -185,6 +186,7 @@ function AdminAnalytics() {
                 <td>{e.date}</td>
                 <td>{e.medicine}</td>
                 <td>{e.quantity_added}</td>
+                <td>{e.discount}</td>
                 <td>{e.total_cost}</td>
               </tr>
             ))}

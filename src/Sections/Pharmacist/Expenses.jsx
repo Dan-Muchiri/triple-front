@@ -34,46 +34,53 @@ function PharmacyExpenses() {
   }, [searchTerm, medicines]);
 
   const formik = useFormik({
-    initialValues: {
-      medicine_id: "",
-      quantity_added: 0,
-    },
-    validationSchema: Yup.object({
-      medicine_id: Yup.string().required("Medicine is required"),
-      quantity_added: Yup.number()
-        .min(1, "Quantity must be at least 1")
-        .required("Quantity is required"),
-    }),
-    onSubmit: async (values, { resetForm }) => {
-      try {
-        const res = await fetch("https://tripletsmediclinic.onrender.com/pharmacy_expenses", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
-        });
-        if (!res.ok) {
-          const errData = await res.json();
-          setServerError(errData.error || "Failed to add expense");
-          return;
-        }
-        resetForm();
-        setSearchTerm("");
-        setServerError("");
-        alert("Pharmacy expense added successfully!");
-      } catch (err) {
-        console.error(err);
-        setServerError(err.message);
+  initialValues: {
+    medicine_id: "",
+    quantity_added: 0,
+    discount: 0, // new field
+  },
+  validationSchema: Yup.object({
+    medicine_id: Yup.string().required("Medicine is required"),
+    quantity_added: Yup.number()
+      .min(1, "Quantity must be at least 1")
+      .required("Quantity is required"),
+    discount: Yup.number()
+      .min(0, "Discount must be positive")
+      .required("Discount is required"),
+  }),
+  onSubmit: async (values, { resetForm }) => {
+    try {
+      const res = await fetch("https://tripletsmediclinic.onrender.com/pharmacy_expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        setServerError(errData.error || "Failed to add expense");
+        return;
       }
-    },
-  });
+      resetForm();
+      setSearchTerm("");
+      setServerError("");
+      alert("Pharmacy expense added successfully!");
+    } catch (err) {
+      console.error(err);
+      setServerError(err.message);
+    }
+  },
+});
 
   const selectedMedicine = medicines.find(
     (m) => m.id === parseInt(formik.values.medicine_id)
   );
   const totalCost =
-    selectedMedicine && formik.values.quantity_added
-      ? selectedMedicine.buying_price * formik.values.quantity_added
-      : 0;
+  selectedMedicine && formik.values.quantity_added
+    ? Math.max(
+        selectedMedicine.buying_price * formik.values.quantity_added - formik.values.discount,
+        0
+      )
+    : 0;
 
   const handleSelectMedicine = (medicine) => {
     formik.setFieldValue("medicine_id", medicine.id);
@@ -130,6 +137,21 @@ function PharmacyExpenses() {
             <div className={styles.error}>{formik.errors.quantity_added}</div>
           )}
         </div>
+
+        <div className={styles.formGroup}>
+        <label>Discount (Ksh)</label>
+        <input
+          type="number"
+          name="discount"
+          value={formik.values.discount}
+          onChange={formik.handleChange}
+          className={styles.input}
+        />
+        {formik.errors.discount && (
+          <div className={styles.error}>{formik.errors.discount}</div>
+        )}
+      </div>
+
 
         <div className={styles.formGroup}>
           <label>Total Cost (Ksh)</label>
