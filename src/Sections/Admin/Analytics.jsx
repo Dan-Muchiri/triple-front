@@ -26,7 +26,7 @@ function AdminAnalytics() {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const res = await fetch("https://tripletsmediclinic.onrender.com/analytics");
+        const res = await fetch("https://server.tripletsmediclinic.co.ke/analytics");
         if (!res.ok) throw new Error("Failed to fetch analytics");
         const data = await res.json();
         setAnalytics(data);

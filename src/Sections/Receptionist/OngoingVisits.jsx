@@ -36,7 +36,7 @@ export default function OngoingVisits({
 
     try {
       const endpoint = "patient" in item ? "visits" : "otc_sales";
-      const res = await fetch(`https://tripletsmediclinic.onrender.com/${endpoint}/${item.id}`, {
+      const res = await fetch(`https://server.tripletsmediclinic.co.ke/${endpoint}/${item.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stage: newStage }),

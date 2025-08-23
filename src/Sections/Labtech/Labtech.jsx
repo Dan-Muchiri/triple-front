@@ -29,7 +29,7 @@ function LabTech() {
 
   const fetchVisits = useCallback(async () => {
     try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com/visits");
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/visits");
       const data = await res.json();
       setVisits(data.filter((v) => v.stage === "waiting_lab"));
     } catch (err) {
@@ -45,7 +45,7 @@ function LabTech() {
 
   const fetchTestRequests = async (visitId) => {
   try {
-    const res = await fetch(`https://tripletsmediclinic.onrender.com/visits/${visitId}`);
+    const res = await fetch(`https://server.tripletsmediclinic.co.ke/visits/${visitId}`);
     const data = await res.json();
     
 
@@ -72,7 +72,7 @@ function LabTech() {
   const handleCompleteVisit = async () => {
   try {
     // 1. Fetch the full visit with all its test requests + consultation info
-    const res = await fetch(`https://tripletsmediclinic.onrender.com/visits/${selectedVisit.id}`);
+    const res = await fetch(`https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`);
     const visitData = await res.json();
 
     let nextStage = "reception"; // default fallback
@@ -100,7 +100,7 @@ function LabTech() {
 
     // 5. Update visit stage
     const updateRes = await fetch(
-      `https://tripletsmediclinic.onrender.com/visits/${selectedVisit.id}`,
+      `https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -155,7 +155,7 @@ function LabTech() {
     onSubmit: async (values) => {
       try {
         const res = await fetch(
-          `https://tripletsmediclinic.onrender.com/test_requests/${selectedTestRequest.id}`,
+          `https://server.tripletsmediclinic.co.ke/test_requests/${selectedTestRequest.id}`,
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },

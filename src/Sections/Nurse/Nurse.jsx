@@ -27,7 +27,7 @@ function Nurse() {
 
   const fetchVisits = useCallback(async () => {
     try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com/visits");
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/visits");
       const data = await res.json();
       setVisits(data.filter((v) => v.stage === "waiting_triage"));
     } catch (err) {
@@ -83,7 +83,7 @@ function Nurse() {
 
     onSubmit: async (values, { resetForm }) => {
       try {
-        const triageRes = await fetch("https://tripletsmediclinic.onrender.com/triage_records", {
+        const triageRes = await fetch("https://server.tripletsmediclinic.co.ke/triage_records", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -102,7 +102,7 @@ function Nurse() {
 
         const triage = await triageRes.json();
 
-        await fetch(`https://tripletsmediclinic.onrender.com/visits/${selectedVisit.id}`, {
+        await fetch(`https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

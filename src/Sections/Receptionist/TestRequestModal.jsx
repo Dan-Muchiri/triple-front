@@ -10,7 +10,7 @@ export default function TestRequestModal({ visitId, onClose }) {
   useEffect(() => {
     const fetchTestTypes = async () => {
       try {
-        const res = await fetch("https://tripletsmediclinic.onrender.com/test_types");
+        const res = await fetch("https://server.tripletsmediclinic.co.ke/test_types");
         const data = await res.json();
         setTestTypes(data);
       } catch (err) {
@@ -22,7 +22,7 @@ export default function TestRequestModal({ visitId, onClose }) {
   }, []);
 
   const api = (path, opts = {}) =>
-    fetch(`https://tripletsmediclinic.onrender.com${path}`, {
+    fetch(`https://server.tripletsmediclinic.co.ke${path}`, {
       headers: { "Content-Type": "application/json" },
       ...opts,
     });

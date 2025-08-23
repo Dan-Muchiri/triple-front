@@ -67,7 +67,7 @@ export default function AddPayment({ visit, setActiveView }) {
     }
 
     try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com/payments", {
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -97,7 +97,7 @@ export default function AddPayment({ visit, setActiveView }) {
         <h2 className={styles.sectionTitle}>Payment Recorded Successfully!</h2>
         <div className={`${styles.modalActions} ${styles.buttonGroup}`}>
           <a
-            href={`https://tripletsmediclinic.onrender.com/receipt/${paymentId}`}
+            href={`https://server.tripletsmediclinic.co.ke/receipt/${paymentId}`}
             target="_blank"
             rel="noopener noreferrer"
             className={styles.btn}

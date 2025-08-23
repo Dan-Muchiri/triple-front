@@ -13,7 +13,7 @@ function PharmacyExpenses() {
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
-        const res = await fetch("https://tripletsmediclinic.onrender.com/medicines");
+        const res = await fetch("https://server.tripletsmediclinic.co.ke/medicines");
         const data = await res.json();
         setMedicines(data);
         setFilteredMedicines(data);
@@ -50,7 +50,7 @@ function PharmacyExpenses() {
   }),
   onSubmit: async (values, { resetForm }) => {
     try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com/pharmacy_expenses", {
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/pharmacy_expenses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),

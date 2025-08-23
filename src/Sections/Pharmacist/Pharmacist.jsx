@@ -33,12 +33,12 @@ function Pharmacist() {
   const fetchVisits = useCallback(async () => {
     try {
       // fetch normal visits
-      const res = await fetch("https://tripletsmediclinic.onrender.com/visits");
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/visits");
       const data = await res.json();
       const waitingVisits = data.filter((v) => v.stage === "waiting_pharmacy");
 
       // fetch OTC sales
-      const otcRes = await fetch("https://tripletsmediclinic.onrender.com/otc_sales");
+      const otcRes = await fetch("https://server.tripletsmediclinic.co.ke/otc_sales");
       const otcData = await otcRes.json();
       const waitingOtc = otcData.filter((s) => s.stage === "waiting_pharmacy");
 
@@ -57,7 +57,7 @@ function Pharmacist() {
 
   const fetchPrescriptions = async (visitId) => {
     try {
-      const res = await fetch(`https://tripletsmediclinic.onrender.com/visits/${visitId}`);
+      const res = await fetch(`https://server.tripletsmediclinic.co.ke/visits/${visitId}`);
       const data = await res.json();
 
       if (data && data.prescriptions) {
@@ -108,7 +108,7 @@ function Pharmacist() {
     onSubmit: async (values) => {
       try {
         const res = await fetch(
-          `https://tripletsmediclinic.onrender.com/prescriptions/${selectedPrescription.id}`,
+          `https://server.tripletsmediclinic.co.ke/prescriptions/${selectedPrescription.id}`,
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -372,7 +372,7 @@ function Pharmacist() {
                             const endpoint =
                               "patient" in item ? "visits" : "otc_sales";
                             const res = await fetch(
-                              `https://tripletsmediclinic.onrender.com/${endpoint}/${item.id}`,
+                              `https://server.tripletsmediclinic.co.ke/${endpoint}/${item.id}`,
                               {
                                 method: "PATCH",
                                 headers: { "Content-Type": "application/json" },

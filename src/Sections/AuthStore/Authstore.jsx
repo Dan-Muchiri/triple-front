@@ -17,7 +17,7 @@ const useAuthStore = create((set) => ({
 
   checkSession: async () => {
     try {
-      const response = await fetch('https://tripletsmediclinic.onrender.com/check_session');
+      const response = await fetch('https://server.tripletsmediclinic.co.ke/check_session');
       if (response.ok) {
         const user = await response.json();
         set({
@@ -45,7 +45,7 @@ const useAuthStore = create((set) => ({
 
   login: async (credentials, navigate) => {
     try {
-      const response = await fetch('https://tripletsmediclinic.onrender.com/login', {
+      const response = await fetch('https://server.tripletsmediclinic.co.ke/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
@@ -93,7 +93,7 @@ const useAuthStore = create((set) => ({
 
   logout: async (navigate) => {
     try {
-      const response = await fetch('https://tripletsmediclinic.onrender.com/logout', { method: 'DELETE' });
+      const response = await fetch('https://server.tripletsmediclinic.co.ke/logout', { method: 'DELETE' });
 
       set({ isLoggedIn: false, userId: null, username: '', userEmail: '', userRole: '' });
       localStorage.removeItem('auth');
@@ -112,7 +112,7 @@ const useAuthStore = create((set) => ({
 
   deleteAccount: async (userId, handleLogout) => {
     try {
-      const response = await fetch(`https://tripletsmediclinic.onrender.com/users/${userId}`, { method: 'DELETE' });
+      const response = await fetch(`https://server.tripletsmediclinic.co.ke/users/${userId}`, { method: 'DELETE' });
       if (response.ok) {
         handleLogout();
       } else {

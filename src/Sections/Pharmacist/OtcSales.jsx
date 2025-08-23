@@ -15,7 +15,7 @@ function OtcSales({ setActiveView }) {
   const [sales, setSales] = useState([]);
 
   const api = (path, opts = {}) =>
-    fetch(`https://tripletsmediclinic.onrender.com${path}`, {
+    fetch(`https://server.tripletsmediclinic.co.ke${path}`, {
       headers: { "Content-Type": "application/json" },
       ...opts,
     });

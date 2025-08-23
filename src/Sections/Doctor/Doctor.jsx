@@ -29,7 +29,7 @@ function Doctor() {
 
   const fetchVisits = useCallback(async () => {
     try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com/visits");
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/visits");
       const data = await res.json();
       const assigned = data.filter((v) => v.stage === "waiting_consultation");
       setVisits(assigned);
@@ -57,7 +57,7 @@ function Doctor() {
         setActiveView("consultation");
         setServerError("");
       } else {
-        const res = await fetch("https://tripletsmediclinic.onrender.com/consultations", {
+        const res = await fetch("https://server.tripletsmediclinic.co.ke/consultations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -132,7 +132,7 @@ function Doctor() {
                             const newStage = e.target.value;
                             try {
                               const res = await fetch(
-                                `https://tripletsmediclinic.onrender.com/visits/${visit.id}`,
+                                `https://server.tripletsmediclinic.co.ke/visits/${visit.id}`,
                                 {
                                   method: "PATCH",
                                   headers: {

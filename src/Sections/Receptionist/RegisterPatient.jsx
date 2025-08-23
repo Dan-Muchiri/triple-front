@@ -36,7 +36,7 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
     onSubmit: async (values, { resetForm }) => {
       try {
         setServerError("");
-        const res = await fetch('https://tripletsmediclinic.onrender.com/patients', {
+        const res = await fetch('https://server.tripletsmediclinic.co.ke/patients', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(values),

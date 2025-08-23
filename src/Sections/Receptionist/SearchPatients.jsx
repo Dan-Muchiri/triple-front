@@ -109,7 +109,7 @@ export default function SearchPatients({
 
                 try {
                   const res = await fetch(
-                    `https://tripletsmediclinic.onrender.com/patients/${selectedPatient.id}`,
+                    `https://server.tripletsmediclinic.co.ke/patients/${selectedPatient.id}`,
                     {
                       method: "PATCH",
                       headers: { "Content-Type": "application/json" },

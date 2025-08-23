@@ -42,7 +42,7 @@ function Admin() {
   // Fetch all users
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com/users");
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/users");
       const data = await res.json();
       setUsers(data);
     } catch (err) {
@@ -81,8 +81,8 @@ function Admin() {
       try {
         const method = selectedUser ? "PATCH" : "POST";
         const url = selectedUser
-          ? `https://tripletsmediclinic.onrender.com/users/${selectedUser.id}`
-          : "https://tripletsmediclinic.onrender.com/users";
+          ? `https://server.tripletsmediclinic.co.ke/users/${selectedUser.id}`
+          : "https://server.tripletsmediclinic.co.ke/users";
 
         const payload = selectedUser
           ? {
@@ -138,7 +138,7 @@ function Admin() {
   const handleDeleteUser = async (userId) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await fetch(`https://tripletsmediclinic.onrender.com/users/${userId}`, {
+      await fetch(`https://server.tripletsmediclinic.co.ke/users/${userId}`, {
         method: "DELETE",
       });
       await fetchUsers();

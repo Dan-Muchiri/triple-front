@@ -30,7 +30,7 @@ export default function Receptionist() {
 
   const fetchPatients = useCallback(async () => {
     try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com/patients");
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/patients");
       if (!res.ok) throw new Error("Failed to fetch patients");
       const data = await res.json();
       setPatients(data);
@@ -42,11 +42,11 @@ export default function Receptionist() {
   const fetchVisits = useCallback(async () => {
   try {
     // normal visits
-    const res = await fetch("https://tripletsmediclinic.onrender.com/visits");
+    const res = await fetch("https://server.tripletsmediclinic.co.ke/visits");
     const visitsData = await res.json();
 
     // OTC sales
-    const otcRes = await fetch("https://tripletsmediclinic.onrender.com/otc_sales");
+    const otcRes = await fetch("https://server.tripletsmediclinic.co.ke/otc_sales");
     const otcData = await otcRes.json();
 
     // merge both
@@ -60,7 +60,7 @@ export default function Receptionist() {
 
   const startVisit = async (patientId) => {
     try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com/visits", {
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/visits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ patient_id: patientId }),

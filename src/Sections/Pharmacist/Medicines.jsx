@@ -13,7 +13,7 @@ function Medicines() {
 
   const fetchMedicines = async () => {
     try {
-      const res = await fetch("https://tripletsmediclinic.onrender.com/medicines");
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/medicines");
       const data = await res.json();
       setMedicines(data);
       setFilteredMedicines(data);
@@ -51,7 +51,7 @@ function Medicines() {
       return;
 
     try {
-      const res = await fetch(`https://tripletsmediclinic.onrender.com/medicines/${medicineId}`, {
+      const res = await fetch(`https://server.tripletsmediclinic.co.ke/medicines/${medicineId}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -95,7 +95,7 @@ function Medicines() {
         if (selectedMedicine) {
           // ✅ Edit existing
           const res = await fetch(
-            `https://tripletsmediclinic.onrender.com/medicines/${selectedMedicine.id}`,
+            `https://server.tripletsmediclinic.co.ke/medicines/${selectedMedicine.id}`,
             {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
@@ -110,7 +110,7 @@ function Medicines() {
         } else {
           // ✅ Add new medicine (stock and sold_units are default 0)
           const { name, buying_price, selling_price, unit } = values;
-          const res = await fetch("https://tripletsmediclinic.onrender.com/medicines", {
+          const res = await fetch("https://server.tripletsmediclinic.co.ke/medicines", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, buying_price, selling_price, unit }),
