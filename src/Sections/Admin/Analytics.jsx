@@ -146,27 +146,6 @@ function AdminAnalytics() {
         </ResponsiveContainer>
       </div>
 
-      {/* --- 7. Low Stock Medicines --- */}
-      <div className={styles.tableBox}>
-        <h3>Low Stock Medicines</h3>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Medicine</th>
-              <th>Stock</th>
-            </tr>
-          </thead>
-          <tbody>
-            {low_stock_medicines.map((m, index) => (
-              <tr key={`${m.medicine}-${index}`}>
-                <td>{m.medicine}</td>
-                <td>{m.stock}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
       {/* --- 8. Recent Pharmacy Expenses --- */}
       <div className={styles.tableBox}>
         <h3>Recent Pharmacy Expenses</h3>

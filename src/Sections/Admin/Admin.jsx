@@ -7,6 +7,7 @@ import * as Yup from "yup";
 import useAuthStore from "../AuthStore/Authstore";
 import { FaBars } from "react-icons/fa";
 import AdminAnalytics from "./Analytics";
+import Medicines from "./Medicines";
 
 const roles = [
   "receptionist",
@@ -146,6 +147,12 @@ function Admin() {
       console.error("Error deleting user:", err);
     }
   };
+  const handleMenuClick = (view) => {
+    setActiveView(view);
+    setSelectedUser(null);
+    setServerError("");
+    setIsMenuOpen(false); // close menu on small screens
+  };
 
   const renderView = () => {
     switch (activeView) {
@@ -257,6 +264,8 @@ function Admin() {
       case "analytics":
       default:
         return <AdminAnalytics />;
+      case "medicines":
+        return <Medicines />;
       case "userList":
         return (
           <div className={styles.sectionBox}>
@@ -321,7 +330,7 @@ function Admin() {
             className={`${styles.navBtn} ${
               activeView === "analytics" ? styles.active : ""
             }`}
-            onClick={() => setActiveView("analytics")}
+            onClick={() => handleMenuClick("analytics")}
           >
             Analytics
           </button>
@@ -330,15 +339,20 @@ function Admin() {
             className={`${styles.navBtn} ${
               activeView === "userList" ? styles.active : ""
             }`}
-            onClick={() => {
-              setActiveView("userList");
-              setSelectedUser(null);
-              setServerError("");
-              setIsMenuOpen(false);
-            }}
+            onClick={() => handleMenuClick("userList")}
           >
             Manage Users
           </button>
+
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "medicines" ? styles.active : ""
+            }`}
+            onClick={() => handleMenuClick("medicines")}
+          >
+            Manage Medicines
+          </button>
+
           {/* Mobile Logout */}
           <button
             className={`${styles.logoutBtn} ${styles.mobileLogout}`}

@@ -427,24 +427,36 @@ function Pharmacist() {
               setActiveView("waitingPharmacy");
               setSelectedVisit(null);
               setServerError("");
-              setIsMenuOpen(false);
+              setIsMenuOpen(false); // close menu
             }}
           >
             Waiting Pharmacy
           </button>
+
           <button
             className={`${styles.navBtn} ${
               activeView === "otcSale" ? styles.active : ""
             }`}
-            onClick={() => setActiveView("otcSale")}
+            onClick={() => {
+              setActiveView("otcSale");
+              setSelectedVisit(null);
+              setServerError("");
+              setIsMenuOpen(false); // close menu
+            }}
           >
             New OTC Sale
           </button>
+
           <button
             className={`${styles.navBtn} ${
               activeView === "pharmacyExpense" ? styles.active : ""
             }`}
-            onClick={() => setActiveView("pharmacyExpense")}
+            onClick={() => {
+              setActiveView("pharmacyExpense");
+              setSelectedVisit(null);
+              setServerError("");
+              setIsMenuOpen(false); // close menu
+            }}
           >
             New Pharmacy Expense
           </button>
@@ -456,6 +468,8 @@ function Pharmacist() {
             onClick={() => {
               setActiveView("medicines");
               setSelectedVisit(null);
+              setServerError("");
+              setIsMenuOpen(false); // close menu
             }}
           >
             Medicines
@@ -466,12 +480,13 @@ function Pharmacist() {
             className={`${styles.logoutBtn} ${styles.mobileLogout}`}
             onClick={() => {
               logout(navigate);
-              setIsMenuOpen(false);
+              setIsMenuOpen(false); // close menu
             }}
           >
             Logout
           </button>
         </nav>
+
         <button
           className={`${styles.logoutBtn} ${styles.desktopLogout}`}
           onClick={() => logout(navigate)}
