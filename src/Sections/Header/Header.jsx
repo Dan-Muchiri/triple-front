@@ -58,6 +58,7 @@ function Header() {
                 <div className={`${styles.navBlock} ${isMenuOpen ? styles.showMenu : ''}`}>
                     <nav className={styles.nav}>
                          <Link to="/" onClick={() => handleScroll("hero")}>Home</Link>
+                         <Link to="/" onClick={() => handleScroll("gallery")}>Gallery</Link> {/* 👈 Add this */}
                          <Link to="/" onClick={() => handleScroll("services")}>Services</Link>
                          <Link to="/" onClick={() => handleScroll("contact")}>Contact</Link>
 

@@ -42,8 +42,31 @@ export default function AddPayment({ visit, setActiveView }) {
     e.preventDefault();
     setServerError("");
 
-    const isConsultFee = visit.presetService === "consultation_fee";
-    const isOtc = visit.isOtc;
+    // Build service description dynamically
+    let servicesList = [];
+
+    if (visit.isOtc) {
+      visit.sales?.forEach((s) => {
+        servicesList.push(
+          `${s.medication_name} × ${s.dispensed_units} — KES ${s.total_price}`
+        );
+      });
+    } else {
+      if (visit.consultation) {
+        servicesList.push(`Consultation Fee — KES ${visit.consultation.fee}`);
+      }
+      visit.direct_test_requests?.forEach((t) => {
+        servicesList.push(`${t.test_type} — KES ${t.price}`);
+      });
+      visit.test_requests?.forEach((t) => {
+        servicesList.push(`${t.test_type} — KES ${t.price}`);
+      });
+      visit.prescriptions?.forEach((p) => {
+        servicesList.push(
+          `${p.medication_name} × ${p.dispensed_units} — KES ${p.price}`
+        );
+      });
+    }
 
     const payload = {
       amount: parseFloat(form.amount),
@@ -51,16 +74,11 @@ export default function AddPayment({ visit, setActiveView }) {
       payment_method: form.payment_method,
       mpesa_receipt:
         form.payment_method === "mpesa" ? form.mpesa_receipt : null,
-      service_type: isConsultFee
-        ? "Consultation Fee"
-        : isOtc
-        ? "OTC Payment"
-        : "Visit Payment",
-      service_amount: isConsultFee ? 200 : null,
+      service_type: servicesList.join("\n"), // ✅ full breakdown as text
     };
 
-    // ✅ Different foreign key depending on type
-    if (isOtc) {
+    // 🔗 Correct FK
+    if (visit.isOtc) {
       payload.otc_sale_id = visit.id;
     } else {
       payload.visit_id = visit.id;
@@ -128,7 +146,7 @@ export default function AddPayment({ visit, setActiveView }) {
             <>
               {visit.sales?.map((s) => (
                 <li key={`sale-${s.id}`}>
-                  💊 {s.medication_name} × {s.dispensed_units} — KES{" "}
+                  {s.medication_name} × {s.dispensed_units} — KES{" "}
                   {s.total_price}
                 </li>
               ))}
@@ -137,23 +155,22 @@ export default function AddPayment({ visit, setActiveView }) {
             <>
               {visit.consultation && (
                 <li key={`consult-fee-${visit.consultation.id}`}>
-                  🩺 Consultation Fee — KES {visit.consultation.fee}
+                  Consultation Fee — KES {visit.consultation.fee}
                 </li>
               )}
               {visit.direct_test_requests?.map((t) => (
                 <li key={`direct-test-${t.id}`}>
-                  🧪 {t.test_type} — KES {t.price}
+                  {t.test_type} — KES {t.price}
                 </li>
               ))}
               {visit.test_requests?.map((t) => (
                 <li key={`consult-test-${t.id}`}>
-                  🧪 {t.test_type} — KES {t.price}
+                  {t.test_type} — KES {t.price}
                 </li>
               ))}
               {visit.prescriptions?.map((p) => (
                 <li key={`pres-${p.id}`}>
-                  💊 {p.medication_name} × {p.dispensed_units} — KES{" "}
-                  {p.price}
+                  {p.medication_name} × {p.dispensed_units} — KES {p.price}
                 </li>
               ))}
             </>
@@ -162,15 +179,13 @@ export default function AddPayment({ visit, setActiveView }) {
       </div>
 
       <p>
-        <strong>Total Charges:</strong> KES{" "}
-        {visit.total_charges}
+        <strong>Total Charges:</strong> KES {visit.total_charges}
       </p>
       <p>
         <strong>Total Payments:</strong> KES {visit.total_payments || 0}
       </p>
       <p>
-        <strong>Balance:</strong> KES{" "}
-        {visit.balance}
+        <strong>Balance:</strong> KES {visit.balance}
       </p>
 
       {serverError && (

@@ -371,7 +371,7 @@
 .buttonGroup {
   display: flex;
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: 0;
 }
 
 .cancelBtn {
@@ -451,6 +451,48 @@
 .testBtn {
   background-color: #e67e22;
   color: white;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  gap: 8px;
+}
+
+.pageBtn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+
+.disabledBtn {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageNumber {
+  background-color: white;
+  border: 1px solid #ccc;
+  color: black;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pageNumber:hover {
+  background-color: #f0f0f0;
+}
+
+.activePage {
+  background-color: var(--base--accent);
+  color: white;
+  border-color: var(--base--accent);
+  font-weight: bold;
 }
 
 

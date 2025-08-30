@@ -8,6 +8,10 @@ import useAuthStore from "../AuthStore/Authstore";
 import { FaBars } from "react-icons/fa";
 import AdminAnalytics from "./Analytics";
 import Medicines from "./Medicines";
+import Patients from "./Patients";
+import PatientInfo from "../Doctor/PatientInfo";
+import PharmacyExpenses from "./Expenses";
+import AllSales from "./AllSales";
 
 const roles = [
   "receptionist",
@@ -24,6 +28,8 @@ function Admin() {
   const [activeView, setActiveView] = useState("analytics");
   const [selectedUser, setSelectedUser] = useState(null);
   const [serverError, setServerError] = useState("");
+  const [patients, setPatients] = useState([]); // ✅ add patients state
+  const [selectedVisit, setSelectedVisit] = useState(null);
 
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
@@ -54,6 +60,22 @@ function Admin() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  // ✅ fetch patients
+  const fetchPatients = useCallback(async () => {
+    try {
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/patients");
+      const data = await res.json();
+      setPatients(data);
+    } catch (err) {
+      console.error("Failed to fetch patients:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchPatients(); // ✅ load patients when admin mounts
+  }, [fetchUsers, fetchPatients]);
 
   // Formik for add/edit
   const formik = useFormik({
@@ -261,6 +283,26 @@ function Admin() {
             </div>
           </form>
         );
+      case "allSales":
+        return <AllSales />;
+      case "patientInfo":
+        return (
+          <PatientInfo
+            visitData={selectedVisit}
+            onBack={() => setActiveView("search")}
+          />
+        );
+      case "expenses":
+        return <PharmacyExpenses />;
+      case "patients":
+        return (
+          <Patients
+            patients={patients}
+            setSelectedVisit={setSelectedVisit}
+            setActiveView={setActiveView}
+          />
+        );
+
       case "analytics":
       default:
         return <AdminAnalytics />;
@@ -278,7 +320,7 @@ function Admin() {
                 setSelectedUser(null);
               }}
             >
-              + Add User
+              + Add Employee
             </button>
 
             <ul className={styles.patientList}>
@@ -341,7 +383,7 @@ function Admin() {
             }`}
             onClick={() => handleMenuClick("userList")}
           >
-            Manage Users
+            Manage Employees
           </button>
 
           <button
@@ -351,6 +393,36 @@ function Admin() {
             onClick={() => handleMenuClick("medicines")}
           >
             Manage Medicines
+          </button>
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "allSales" ? styles.active : ""
+            }`}
+            onClick={() => {
+              setActiveView("allSales");
+              setSelectedVisit(null);
+              setServerError("");
+              setIsMenuOpen(false);
+            }}
+          >
+            Pharmacy Sales
+          </button>
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "expenses" ? styles.active : ""
+            }`}
+            onClick={() => handleMenuClick("expenses")}
+          >
+            Pharmacy Expenses
+          </button>
+
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "patients" ? styles.active : ""
+            }`}
+            onClick={() => handleMenuClick("patients")}
+          >
+            All Patients
           </button>
 
           {/* Mobile Logout */}

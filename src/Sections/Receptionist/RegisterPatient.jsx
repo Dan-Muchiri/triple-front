@@ -22,6 +22,8 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
       national_id: '',
       phone_number: '',
       email: '',
+      next_of_kin_phone: '',   // ✅ new field
+      location: '',            // ✅ new field
     },
     validationSchema: Yup.object({
       first_name: Yup.string().required('Required'),
@@ -31,6 +33,8 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
       national_id: Yup.string(),
       phone_number: Yup.string(),
       email: Yup.string().email('Invalid email'),
+      next_of_kin_phone: Yup.string(),  // you could add phone validation here
+      location: Yup.string(),
     }),
 
     onSubmit: async (values, { resetForm }) => {
@@ -62,8 +66,6 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
     <form onSubmit={formik.handleSubmit} className={`${styles.sectionBox} ${styles.flexOne}`}>
       <h2 className={styles.sectionTitle}>Register New Patient</h2>
 
-      
-
       {[
         "first_name",
         "last_name",
@@ -72,6 +74,8 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
         "national_id",
         "phone_number",
         "email",
+        "next_of_kin_phone",   // ✅ render kin phone
+        "location",            // ✅ render location
       ].map((field) => (
         <div className={styles.formGroup} key={field}>
           <label>{field.replace('_', ' ')}</label>
@@ -102,6 +106,7 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
           )}
         </div>
       ))}
+
       {serverError && (
         <div className={styles.error} style={{ marginBottom: '1rem' }}>
           {serverError}

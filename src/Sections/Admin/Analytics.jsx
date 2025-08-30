@@ -47,9 +47,7 @@ function AdminAnalytics() {
   const {
     metrics,
     pharmacy_breakdown,
-    recent_expenses,
     top_medicines,
-    low_stock_medicines,
     top_lab_tests,
     top_imaging_tests,
   } = analytics;
@@ -146,32 +144,6 @@ function AdminAnalytics() {
         </ResponsiveContainer>
       </div>
 
-      {/* --- 8. Recent Pharmacy Expenses --- */}
-      <div className={styles.tableBox}>
-        <h3>Recent Pharmacy Expenses</h3>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Medicine</th>
-              <th>Quantity Added</th>
-              <th>Discount (Ksh)</th>
-              <th>Total Cost</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recent_expenses.map((e, idx) => (
-              <tr key={idx}>
-                <td>{e.date}</td>
-                <td>{e.medicine}</td>
-                <td>{e.quantity_added}</td>
-                <td>{e.discount}</td>
-                <td>{e.total_cost}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }

@@ -17,7 +17,7 @@ function Hero() {
         <div className={styles.heroContent}>
           <div className={styles.contentWrapper}>
             <div className={styles.leftWords}>
-                <h1>Your Health, Our Passion</h1>
+                <h1>Caring Hands</h1>
                 <div className={styles.separator}></div>
                 <div className={styles.buttons}>
                     <a href="#contact" className={styles.requestButton}>

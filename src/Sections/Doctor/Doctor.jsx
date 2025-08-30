@@ -4,15 +4,16 @@ import useAuthStore from "../AuthStore/Authstore";
 import styles from "./DoctorStyles.module.css";
 import ConsultationForm from "./ConsultationForm";
 import PatientInfo from "./PatientInfo"; // ✅ Import new component
+import ConsultedPatients from "./Patients";
 import { FaBars } from "react-icons/fa";
 
 function Doctor() {
   const [visits, setVisits] = useState([]);
+  const [consultedVisits, setConsultedVisits] = useState([]);
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [activeView, setActiveView] = useState("waitingConsultation");
   const [consultationId, setConsultationId] = useState(null);
   const [serverError, setServerError] = useState("");
-  const [patientInfoVisit, setPatientInfoVisit] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -32,7 +33,10 @@ function Doctor() {
       const res = await fetch("https://server.tripletsmediclinic.co.ke/visits");
       const data = await res.json();
       const assigned = data.filter((v) => v.stage === "waiting_consultation");
+
+      const consulted = data.filter((v) => v.consultation);
       setVisits(assigned);
+      setConsultedVisits(consulted);
     } catch (err) {
       console.error("Failed to fetch visits:", err);
     }
@@ -45,7 +49,7 @@ function Doctor() {
   }, [fetchVisits]);
 
   const handleViewPatientInfo = (visit) => {
-    setPatientInfoVisit(visit);
+    setSelectedVisit(visit);
     setActiveView("patientInfo");
   };
 
@@ -83,10 +87,18 @@ function Doctor() {
 
   const renderView = () => {
     switch (activeView) {
+      case "consultedPatients":
+        return (
+          <ConsultedPatients
+            consultedVisits={consultedVisits}
+            onViewPatientInfo={handleViewPatientInfo}
+          />
+        );
+
       case "patientInfo":
         return (
           <PatientInfo
-            visit={patientInfoVisit}
+            visitData={selectedVisit}
             onBack={() => setActiveView("waitingConsultation")}
           />
         );
@@ -115,10 +127,12 @@ function Doctor() {
                   <div key={visit.id} className={styles.patientCard}>
                     <div className={styles.patientCardHeader}>
                       <strong>
-                        {visit.patient.first_name} {visit.patient.last_name} (
-                        {visit.patient.age} yrs)
-                      </strong>
+                        {visit.patient?.first_name} {visit.patient?.last_name} (
+                        {visit.patient?.age} yrs)
+                      </strong>{" "}
+                      - OP No: {visit.patient?.id}
                     </div>
+
                     <div className={styles.patientCardBody}>
                       <p>
                         Created: {new Date(visit.created_at).toLocaleString()}
@@ -202,6 +216,19 @@ function Doctor() {
             }}
           >
             Waiting Consultation
+          </button>
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "consultedPatients" ? styles.active : ""
+            }`}
+            onClick={() => {
+              setActiveView("consultedPatients");
+              setSelectedVisit(null);
+              setServerError("");
+              setIsMenuOpen(false);
+            }}
+          >
+            Past Visits
           </button>
           {/* Mobile Logout */}
           <button

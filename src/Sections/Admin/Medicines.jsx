@@ -11,6 +11,10 @@ function Medicines() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showNewModal, setShowNewModal] = useState(false); // ✅ new state
 
+  // 🔹 Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+
   const fetchMedicines = async () => {
     try {
       const res = await fetch("https://server.tripletsmediclinic.co.ke/medicines");
@@ -27,12 +31,19 @@ function Medicines() {
   }, []);
 
   useEffect(() => {
-    setFilteredMedicines(
-      medicines.filter((m) =>
-        m.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+    const filtered = medicines.filter((m) =>
+      m.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+    setFilteredMedicines(filtered);
+    setCurrentPage(1); // reset to page 1 on new search
   }, [searchTerm, medicines]);
+
+  // 🔹 Pagination calculations
+  const totalPages = Math.ceil(filteredMedicines.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentMedicines = [...filteredMedicines]
+    .sort((a, b) => (a.stock <= 5 && b.stock > 5 ? -1 : 1)) // low stock first
+    .slice(startIndex, startIndex + pageSize);
 
   const handleEdit = (medicine) => {
     setSelectedMedicine(medicine);
@@ -47,24 +58,29 @@ function Medicines() {
   };
 
   const handleDelete = async (medicineId) => {
-    if (!window.confirm("Are you sure you want to delete this medicine?"))
-      return;
+  if (!window.confirm("Are you sure you want to delete this medicine?"))
+    return;
 
-    try {
-      const res = await fetch(`https://server.tripletsmediclinic.co.ke/medicines/${medicineId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        setServerError(data.error || "Failed to delete medicine");
-        return;
-      }
-      fetchMedicines();
-    } catch (err) {
-      console.error("Error deleting medicine:", err);
-      setServerError(err.message);
+  try {
+    const res = await fetch(`https://server.tripletsmediclinic.co.ke/medicines/${medicineId}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json(); // ✅ always parse JSON
+
+    if (!res.ok) {
+      alert(data.message || data.error || "Failed to delete medicine"); // ✅ show alert
+      return;
     }
-  };
+
+    alert(data.message || "Medicine deleted successfully"); // ✅ success alert
+    fetchMedicines();
+  } catch (err) {
+    console.error("Error deleting medicine:", err);
+    alert(err.message); // ✅ show network error
+  }
+};
+
 
   // ✅ Formik for editing and new medicine
   const formik = useFormik({
@@ -165,59 +181,118 @@ function Medicines() {
 
           {/* Medicine List */}
           <ul className={styles.testList}>
-            {filteredMedicines.length === 0 ? (
+            {currentMedicines.length === 0 ? (
               <li>No medicines found.</li>
             ) : (
-              [...filteredMedicines]
-                .sort((a, b) => (a.stock <= 5 && b.stock > 5 ? -1 : 1)) // ✅ low stock first
-                .map((m) => (
-                  <li
-                    key={m.id}
-                    className={`${styles.testCard} ${
-                      m.stock <= 5 ? styles.lowStockCard : ""
-                    }`}
-                  >
-                    <div>
-                      <strong>Name:</strong> {m.name}{" "}
-                      {m.stock <= 5 && (
-                        <span className={styles.lowStockBadge}>
-                          ⚠ Almost Out of Stock
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <strong>Stock:</strong> {m.stock}
-                    </div>
-                    <div>
-                      <strong>Sold Units:</strong> {m.sold_units}
-                    </div>
-                    <div>
-                      <strong>Buying Price:</strong> {m.buying_price}
-                    </div>
-                    <div>
-                      <strong>Selling Price:</strong> {m.selling_price}
-                    </div>
-                    <div>
-                      <strong>Unit:</strong> {m.unit}
-                    </div>
-                    <div className={styles.buttonGroup}>
-                      <button
-                        className={styles.btn}
-                        onClick={() => handleEdit(m)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className={`${styles.btn} ${styles.deleteBtn}`}
-                        onClick={() => handleDelete(m.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))
+              currentMedicines.map((m) => (
+                <li
+                  key={m.id}
+                  className={`${styles.testCard} ${
+                    m.stock <= 5 ? styles.lowStockCard : ""
+                  }`}
+                >
+                  <div>
+                    <strong>Name:</strong> {m.name}{" "}
+                    {m.stock <= 5 && (
+                      <span className={styles.lowStockBadge}>
+                        ⚠ Almost Out of Stock
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <strong>Stock:</strong> {m.stock}
+                  </div>
+                  <div>
+                    <strong>Sold Units:</strong> {m.sold_units}
+                  </div>
+                  <div>
+                    <strong>Buying Price:</strong> {m.buying_price}
+                  </div>
+                  <div>
+                    <strong>Selling Price:</strong> {m.selling_price}
+                  </div>
+                  <div>
+                    <strong>Unit:</strong> {m.unit}
+                  </div>
+                  <div className={styles.buttonGroup}>
+                    <button
+                      className={styles.btn}
+                      onClick={() => handleEdit(m)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className={`${styles.btn} ${styles.deleteBtn}`}
+                      onClick={() => handleDelete(m.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </li>
+              ))
             )}
           </ul>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+                className={`${styles.pageBtn} ${
+                  currentPage === 1 ? styles.disabledBtn : ""
+                }`}
+              >
+                Prev
+              </button>
+
+              {(() => {
+                const maxVisible = 5;
+                let start = Math.max(
+                  1,
+                  currentPage - Math.floor(maxVisible / 2)
+                );
+                let end = Math.min(totalPages, start + maxVisible - 1);
+
+                if (end - start + 1 < maxVisible) {
+                  start = Math.max(1, end - maxVisible + 1);
+                }
+
+                const pages = [];
+                if (start > 1) pages.push(1, "…");
+                for (let i = start; i <= end; i++) pages.push(i);
+                if (end < totalPages) pages.push("…", totalPages);
+
+                return pages.map((p, idx) =>
+                  p === "…" ? (
+                    <span key={`dots-${idx}`} className={styles.ellipsis}>
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={`${styles.pageNumber} ${styles.btn} ${
+                        currentPage === p ? styles.activePage : ""
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                );
+              })()}
+
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                className={`${styles.pageBtn} ${styles.btn} ${
+                  currentPage === totalPages ? styles.disabledBtn : ""
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </>
       )}
 
@@ -249,7 +324,7 @@ function Medicines() {
                   name="stock"
                   value={formik.values.stock}
                   onChange={formik.handleChange}
-                  className={styles.input} // removed readOnly class
+                  className={styles.input}
                 />
                 {formik.errors.stock && (
                   <div className={styles.error}>{formik.errors.stock}</div>
@@ -263,7 +338,7 @@ function Medicines() {
                   name="sold_units"
                   value={formik.values.sold_units}
                   onChange={formik.handleChange}
-                  className={styles.input} // removed readOnly class
+                  className={styles.input}
                 />
                 {formik.errors.sold_units && (
                   <div className={styles.error}>{formik.errors.sold_units}</div>

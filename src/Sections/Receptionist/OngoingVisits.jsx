@@ -86,7 +86,8 @@ export default function OngoingVisits({
                 <span>
                   {"patient" in item
                     ? `${item.patient?.first_name} ${item.patient?.last_name}`
-                    : item.patient_name}
+                    : item.patient_name}{" "}
+                  ({item.patient?.age} yrs) - OP No: {item.patient?.id}
                 </span>
                 <span className={`${styles.visitStage} ${item.stage}`}>
                   {item.stage.replace("_", " ")}
@@ -188,8 +189,7 @@ export default function OngoingVisits({
                     <ul>
                       {item.payments.map((pay) => (
                         <li key={pay.id}>
-                          KES {pay.amount} - {pay.service_type} via{" "}
-                          {pay.payment_method}
+                          KES {pay.amount} via {pay.payment_method}
                         </li>
                       ))}
                     </ul>

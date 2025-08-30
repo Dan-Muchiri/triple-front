@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
 import styles from "./ReceptionistStyles.module.css";
 
-
 export default function SearchPatients({
   fetchPatients,
   patients,
   startVisit,
+  setSelectedVisit, // ✅ add this
+  setActiveView, // ✅ add this
 }) {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
-  
-  const [selectedPatient, setSelectedPatient] = useState(null); // for Info
-  
+  const [selectedPatient, setSelectedPatient] = useState(null);
   const [serverError, setServerError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
   useEffect(() => {
     if (serverError) {
@@ -32,10 +33,17 @@ export default function SearchPatients({
           (p.last_name &&
             p.last_name.toLowerCase().includes(search.toLowerCase()))
       )
-    : [];
+    : patients
+        .slice()
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    
-
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredPatients.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentPatients = filteredPatients.slice(
+    startIndex,
+    startIndex + pageSize
+  );
 
   return (
     <div className={`${styles.sectionBox} ${styles.flexOne}`}>
@@ -44,47 +52,107 @@ export default function SearchPatients({
         type="text"
         placeholder="Search by name, email, National ID, or phone"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setCurrentPage(1); // reset pagination when searching
+        }}
         className={styles.searchInput}
       />
       <ul className={styles.patientListGrid}>
-        {filteredPatients.length === 0 && search ? (
+        {currentPatients.length === 0 ? (
           <li className={styles.emptyMsg}>No patients found.</li>
         ) : (
-          filteredPatients.map((patient) => (
-            <li key={patient.id} className={styles.patientCardGrid}>
-              <div>
-                <strong>
-                  {patient.first_name} {patient.last_name}
-                </strong>{" "}
-                ({patient.age} yrs)
-              </div>
-              <div className={styles.patientCardActions}>
-                {/* Info */}
-                <button
-                  className={`${styles.btn} ${styles.infoBtn}`}
-                  onClick={() => {
-                    setSelectedPatient(patient);
-                    setServerError("");
-                    setShowModal(true);
-                  }}
-                >
-                  Info
-                </button>
-
-                {/* Start Visit */}
-                <button
-                  onClick={() => startVisit(patient.id)}
-                  className={`${styles.btn} ${styles.visitBtn}`}
-                >
-                  Start Visit
-                </button>
-
-              </div>
-            </li>
-          ))
+          [...currentPatients]
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .map((patient) => (
+              <li key={patient.id} className={styles.patientCardGrid}>
+                <div>
+                  <strong>
+                    {patient.first_name} {patient.last_name}
+                  </strong>{" "}
+                  ({patient.age} yrs) - OP No: {patient.id}
+                </div>
+                <div>
+                  <em>Date Created:</em>{" "}
+                  {patient.created_at
+                    ? new Date(patient.created_at).toLocaleDateString()
+                    : "N/A"}
+                </div>
+                <div className={styles.patientCardActions}>
+                  <button
+                    className={`${styles.btn} ${styles.infoBtn}`}
+                    onClick={() => {
+                      setSelectedPatient(patient);
+                      setServerError("");
+                      setShowModal(true);
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => startVisit(patient.id)}
+                    className={`${styles.btn} ${styles.visitBtn}`}
+                  >
+                    Start Visit
+                  </button>
+                  <button
+                    className={`${styles.btn} ${styles.pastVisitsBtn}`}
+                    onClick={() => {
+                      if (patient.visits && patient.visits.length > 0) {
+                        setSelectedVisit({
+                          currentVisit: patient.visits[0],
+                          patient: patient,
+                        });
+                        setActiveView("patientInfo");
+                      } else {
+                        alert("No past visits for this patient.");
+                      }
+                    }}
+                  >
+                    Past Visits
+                  </button>
+                </div>
+              </li>
+            ))
         )}
       </ul>
+
+      {/* Pagination controls */}
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+            className={`${styles.pageBtn} ${
+              currentPage === 1 ? styles.disabledBtn : ""
+            }`}
+          >
+            Prev
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <button
+              key={p}
+              onClick={() => setCurrentPage(p)}
+              className={`${styles.pageNumber} ${styles.btn} ${
+                currentPage === p ? styles.activePage : ""
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+            className={`${styles.pageBtn} ${
+              currentPage === totalPages ? styles.disabledBtn : ""
+            }`}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {showModal && selectedPatient && (
         <div className={styles.modalOverlay}>
@@ -105,6 +173,8 @@ export default function SearchPatients({
                   national_id: e.target.national_id.value,
                   phone_number: e.target.phone_number.value,
                   email: e.target.email.value,
+                  next_of_kin_phone: e.target.next_of_kin_phone.value, // ✅ added
+                  location: e.target.location.value, // ✅ added
                 };
 
                 try {
@@ -146,6 +216,8 @@ export default function SearchPatients({
                   "national_id",
                   "phone_number",
                   "email",
+                  "next_of_kin_phone", // ✅ render
+                  "location", // ✅ render
                 ].map((field) => (
                   <div key={field} className={styles.formGroup}>
                     <label>{field.replace("_", " ")}</label>
@@ -202,8 +274,6 @@ export default function SearchPatients({
           </div>
         </div>
       )}
-
-      
     </div>
   );
 }

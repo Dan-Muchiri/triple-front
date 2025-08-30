@@ -5,9 +5,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import useAuthStore from "../AuthStore/Authstore";
 import { FaBars } from "react-icons/fa";
+import PatientInfo from "../Doctor/PatientInfo";
+import ImagingPastVisits from "./PastVisits";
 
 function Imaging() {
   const [visits, setVisits] = useState([]);
+  const [pastImagingVisits, setPastImagingVisits] = useState([]);
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [testRequests, setTestRequests] = useState([]);
   const [selectedTestRequest, setSelectedTestRequest] = useState(null);
@@ -31,7 +34,19 @@ function Imaging() {
     try {
       const res = await fetch("https://server.tripletsmediclinic.co.ke/visits");
       const data = await res.json();
+
+      // Waiting imaging
       setVisits(data.filter((v) => v.stage === "waiting_imaging"));
+
+      // Past imaging visits
+      const pastImaging = data.filter((v) => {
+        const allTests = [
+          ...(v.test_requests || []),
+          ...(v.direct_test_requests || []),
+        ];
+        return allTests.some((t) => t.category === "imaging");
+      });
+      setPastImagingVisits(pastImaging);
     } catch (err) {
       console.error("Failed to fetch visits:", err);
     }
@@ -44,82 +59,81 @@ function Imaging() {
   }, [fetchVisits]);
 
   const fetchTestRequests = async (visitId) => {
-  try {
-    const res = await fetch(`https://server.tripletsmediclinic.co.ke/visits/${visitId}`);
-    const data = await res.json();
+    try {
+      const res = await fetch(`https://server.tripletsmediclinic.co.ke/visits/${visitId}`);
+      const data = await res.json();
 
-    if (data) {
-      // merge normal and direct test requests
+      if (data) {
+        // merge normal and direct test requests
+        const allTests = [
+          ...(data.test_requests || []),
+          ...(data.direct_test_requests || []),
+        ];
+
+        // only keep imaging category tests
+        const imagingTests = allTests.filter((t) => t.category === "imaging");
+
+        setTestRequests(imagingTests);
+      } else {
+        setTestRequests([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch imaging test requests:", err);
+    }
+  };
+
+  const handleCompleteVisit = async () => {
+    try {
+      // 1. Fetch the full visit with all its test requests + direct test requests + consultation info
+      const res = await fetch(
+        `https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`
+      );
+      const visitData = await res.json();
+
+      let nextStage = "reception"; // default fallback
+
+      // 2. Merge normal + direct test requests
       const allTests = [
-        ...(data.test_requests || []),
-        ...(data.direct_test_requests || []),
+        ...(visitData.test_requests || []),
+        ...(visitData.direct_test_requests || []),
       ];
 
-      // only keep imaging category tests
-      const imagingTests = allTests.filter((t) => t.category === "imaging");
+      // 3. Check if there are pending lab test requests
+      const pendingLab = allTests.some(
+        (t) => t.category === "lab" && t.status === "pending"
+      );
 
-      setTestRequests(imagingTests);
-    } else {
-      setTestRequests([]);
-    }
-  } catch (err) {
-    console.error("Failed to fetch imaging test requests:", err);
-  }
-};
-
-
- const handleCompleteVisit = async () => {
-  try {
-    // 1. Fetch the full visit with all its test requests + direct test requests + consultation info
-    const res = await fetch(`https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`);
-    const visitData = await res.json();
-
-    let nextStage = "reception"; // default fallback
-
-    // 2. Merge normal + direct test requests
-    const allTests = [
-      ...(visitData.test_requests || []),
-      ...(visitData.direct_test_requests || []),
-    ];
-
-    // 3. Check if there are pending lab test requests
-    const pendingLab = allTests.some(
-      (t) => t.category === "lab" && t.status === "pending"
-    );
-
-    if (pendingLab) {
-      nextStage = "waiting_lab"; // ✅ send to imaging if lab requests exist
-    } else if (!visitData.consultation) {
-      // 4. No consultation yet
-      nextStage = "reception";
-    } else {
-      // 5. Consultation exists
-      nextStage = "waiting_consultation";
-    }
-
-    // 6. Update visit stage
-    const updateRes = await fetch(
-      `https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage: nextStage }),
+      if (pendingLab) {
+        nextStage = "waiting_lab"; // ✅ send to imaging if lab requests exist
+      } else if (!visitData.consultation) {
+        // 4. No consultation yet
+        nextStage = "reception";
+      } else {
+        // 5. Consultation exists
+        nextStage = "waiting_consultation";
       }
-    );
 
-    if (!updateRes.ok) {
-      throw new Error("Failed to update visit stage");
+      // 6. Update visit stage
+      const updateRes = await fetch(
+        `https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stage: nextStage }),
+        }
+      );
+
+      if (!updateRes.ok) {
+        throw new Error("Failed to update visit stage");
+      }
+
+      alert(`Visit updated to ${nextStage.replace("_", " ")}.`);
+      setActiveView("waitingImaging"); // ✅ imaging view here
+    } catch (error) {
+      console.error("Error updating visit:", error);
+      alert("Failed to update visit stage.");
     }
-
-    alert(`Visit updated to ${nextStage.replace("_", " ")}.`);
-    setActiveView("waitingImaging"); // ✅ imaging view here
-  } catch (error) {
-    console.error("Error updating visit:", error);
-    alert("Failed to update visit stage.");
-  }
-};
-
-
+  };
 
   const handleViewTests = (visit) => {
     setSelectedVisit(visit);
@@ -181,6 +195,24 @@ function Imaging() {
 
   const renderView = () => {
     switch (activeView) {
+      case "pastImagingVisits":
+        return (
+          <ImagingPastVisits
+            pastImagingVisits={pastImagingVisits}
+            onViewPatientInfo={(visit) => {
+              setSelectedVisit(visit);
+              setActiveView("patientInfo");
+            }}
+          />
+        );
+
+      case "patientInfo":
+        return (
+          <PatientInfo
+            visitData={selectedVisit}
+            onBack={() => setActiveView("waitingLab")}
+          />
+        );
       case "testRequests":
         return (
           <div className={styles.sectionBox}>
@@ -349,16 +381,28 @@ function Imaging() {
                     <div>
                       {visit.patient.first_name} {visit.patient.last_name} (
                       {visit.patient.age} yrs)
+                      (OP No: {visit.patient.id})
                     </div>
                     <div>
                       Created: {new Date(visit.created_at).toLocaleString()}
                     </div>
-                    <button
-                      className={styles.btn}
-                      onClick={() => handleViewTests(visit)}
-                    >
-                      View Imaging Requests
-                    </button>
+                    <div className={styles.buttonGroup}>
+                      <button
+                        className={styles.btn}
+                        onClick={() => handleViewTests(visit)}
+                      >
+                        View Imaging Requests
+                      </button>
+                      <button
+                        className={styles.btn}
+                        onClick={() => {
+                          setSelectedVisit(visit);
+                          setActiveView("patientInfo"); // ✅ show Patient Info
+                        }}
+                      >
+                        Patient Info
+                      </button>
+                    </div>
                   </li>
                 ))
               )}
@@ -388,6 +432,20 @@ function Imaging() {
           >
             Waiting Imaging
           </button>
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "pastImagingVisits" ? styles.active : ""
+            }`}
+            onClick={() => {
+              setActiveView("pastImagingVisits");
+              setSelectedVisit(null);
+              setServerError("");
+              setIsMenuOpen(false);
+            }}
+          >
+            Past Visits
+          </button>
+
           {/* Mobile Logout */}
           <button
             className={`${styles.logoutBtn} ${styles.mobileLogout}`}

@@ -8,10 +8,12 @@ function OtcSales({ setActiveView }) {
     patient_name: "",
     medicine_id: null,
     medication_name: "",
-    price: 0,
+    price: 0, // selling price from medicine
     quantity: "",
+    total_price: 0, // manually entered by pharmacist
     suggestions: [],
   });
+
   const [sales, setSales] = useState([]);
 
   const api = (path, opts = {}) =>
@@ -64,7 +66,8 @@ function OtcSales({ setActiveView }) {
   const handlePatientChange = (val) =>
     setNewSale((prev) => ({ ...prev, patient_name: val }));
   const handlePriceChange = (price) =>
-    setNewSale((prev) => ({ ...prev, price: +price }));
+    setNewSale((prev) => ({ ...prev, total_price: +price })); // only total_price
+
   const handleQuantityChange = (qty) =>
     setNewSale((prev) => ({ ...prev, quantity: qty }));
 
@@ -87,8 +90,8 @@ function OtcSales({ setActiveView }) {
   };
 
   const handleAddSale = async () => {
-    if (!otcSale || !newSale.medicine_id || !newSale.quantity) {
-      alert("Please select medicine and quantity");
+    if (!otcSale || !newSale.medicine_id || !newSale.total_price) {
+      alert("Please select medicine and enter total price");
       return;
     }
     try {
@@ -99,27 +102,28 @@ function OtcSales({ setActiveView }) {
           pharmacist_id: 1,
           medicine_id: newSale.medicine_id,
           dispensed_units: +newSale.quantity,
+          total_price: +newSale.total_price,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save sale");
 
       setSales((prev) => [...prev, data]);
-      setNewSale((prev) => ({
-        ...prev,
+      setNewSale({
+        patient_name: newSale.patient_name,
         medicine_id: null,
         medication_name: "",
         price: 0,
         quantity: "",
+        total_price: 0,
         suggestions: [],
-      }));
+      });
     } catch (err) {
       alert("Error: " + err.message);
     }
   };
 
   const total = sales.reduce((acc, s) => acc + (s.total_price || 0), 0);
-  const lineTotal = newSale.price * (newSale.quantity || 0);
 
   return (
     <div className={styles.sectionBox}>
@@ -134,7 +138,11 @@ function OtcSales({ setActiveView }) {
             onChange={(e) => handlePatientChange(e.target.value)}
             className={styles.input}
           />
-          <button onClick={handleCreateOtc} className={styles.btn}>
+          <button
+            onClick={handleCreateOtc}
+            className={styles.btn}
+            style={{ marginTop: "1rem" }} // 👈 add inline margin
+          >
             Create OTC Sale
           </button>
         </div>
@@ -164,11 +172,11 @@ function OtcSales({ setActiveView }) {
             </ul>
           )}
 
-          <label className={styles.label}>Price</label>
+          <label className={styles.label}>Price (Ksh per unit)</label>
           <input
             type="number"
             value={newSale.price}
-            onChange={(e) => handlePriceChange(e.target.value)}
+            disabled
             className={styles.input}
           />
 
@@ -180,15 +188,19 @@ function OtcSales({ setActiveView }) {
             className={styles.input}
           />
 
-          <label className={styles.label}>Line Total</label>
+          <label className={styles.label}>Total Price (KES)</label>
           <input
-            type="text"
-            value={`KES ${lineTotal}`}
-            disabled
+            type="number"
+            value={newSale.total_price}
+            onChange={(e) => handlePriceChange(e.target.value)}
             className={styles.input}
           />
 
-          <button onClick={handleAddSale} className={styles.btn}>
+          <button
+            onClick={handleAddSale}
+            style={{ marginTop: "1rem" }}
+            className={styles.btn}
+          >
             Add Sale
           </button>
 

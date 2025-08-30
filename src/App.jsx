@@ -15,6 +15,7 @@ import LabTech from './Sections/Labtech/Labtech';
 import Imaging from './Sections/Imaging/Imaging';
 import Pharmacist from './Sections/Pharmacist/Pharmacist';
 import Admin from './Sections/Admin/Admin';
+import ClinicGallery from './Sections/Gallery/ClinicGallery';
 
 
 function ScrollToTop() {
@@ -33,6 +34,7 @@ function Home() {
     <>
       <Header />
       <Hero/>
+      <ClinicGallery/>
       <Services/>
       <Testimonials/>
       <Contact/>

@@ -7,6 +7,7 @@ import RegisterPatient from "./RegisterPatient";
 import SearchPatients from "./SearchPatients";
 import OngoingVisits from "./OngoingVisits";
 import AddPayment from "./AddPayment";
+import PatientInfo from "../Doctor/PatientInfo";
 
 export default function Receptionist() {
   const navigate = useNavigate();
@@ -103,6 +104,13 @@ export default function Receptionist() {
 
   const renderView = () => {
     switch (activeView) {
+      case "patientInfo":
+  return (
+    <PatientInfo
+      visitData={selectedVisit}
+      onBack={() => setActiveView("search")}
+    />
+  );
       case "register":
         return (
           <RegisterPatient

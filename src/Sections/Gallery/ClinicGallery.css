@@ -1,0 +1,40 @@
+.clinic-gallery {
+  padding: 3rem 2rem;
+  text-align: center;
+  background: #f9f9f9;
+}
+
+.gallery-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  color: #2c3e50;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  justify-items: center;
+}
+
+.gallery-item {
+  overflow: hidden;
+  border-radius: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  background: white;
+  transition: transform 0.3s ease;
+  max-width: 280px; /* keeps portrait look */
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 380px; /* keeps portrait height */
+  object-fit: cover;
+  border-radius: 1rem;
+  transition: transform 0.4s ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.05);
+}

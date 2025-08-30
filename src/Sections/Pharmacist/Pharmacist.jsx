@@ -8,6 +8,7 @@ import { FaBars } from "react-icons/fa";
 import Medicines from "./Medicines";
 import OtcSales from "./OtcSales";
 import PharmacyExpenses from "./Expenses";
+import AllSales from "./AllSales";
 
 function Pharmacist() {
   const [visits, setVisits] = useState([]);
@@ -85,6 +86,7 @@ function Pharmacist() {
       instructions: prescription.instructions || "",
       status: prescription.status || "",
       dispensed_units: prescription.dispensed_units || 0, // ✅ prefill
+      total_price: prescription.total_price || 0,
     });
   };
 
@@ -94,7 +96,8 @@ function Pharmacist() {
       dosage: "",
       instructions: "",
       status: "",
-      dispensed_units: 0, // ✅ new field
+      dispensed_units: 0,
+      total_price: 0, // ✅ new field
     },
     validationSchema: Yup.object({
       medication_name: Yup.string().required("Required"),
@@ -104,6 +107,7 @@ function Pharmacist() {
       dispensed_units: Yup.number()
         .min(0, "Cannot be negative")
         .required("Required"), // ✅ validate
+      total_price: Yup.number().min(0, "Enter valid price").required(),
     }),
     onSubmit: async (values) => {
       try {
@@ -293,16 +297,17 @@ function Pharmacist() {
             </div>
 
             <div className={styles.formGroup}>
-              <label>Price (Ksh)</label>
+              <label>Total Price (Ksh)</label>
               <input
                 type="number"
-                value={
-                  formik.values.dispensed_units *
-                  (selectedPrescription?.selling_price || 0)
-                }
-                disabled
+                name="total_price"
+                value={formik.values.total_price}
+                onChange={formik.handleChange}
                 className={styles.input}
               />
+              {formik.errors.total_price && (
+                <div className={styles.error}>{formik.errors.total_price}</div>
+              )}
             </div>
 
             {serverError && <div className={styles.error}>{serverError}</div>}
@@ -322,6 +327,9 @@ function Pharmacist() {
           </form>
         );
 
+      case "allSales":
+        return <AllSales />;
+
       case "waitingPharmacy":
       default:
         return (
@@ -337,7 +345,7 @@ function Pharmacist() {
                   <li key={item.id} className={styles.patientCard}>
                     <div>
                       {"patient" in item
-                        ? `${item.patient.first_name} ${item.patient.last_name} (${item.patient.age} yrs)`
+                        ? `${item.patient.first_name} ${item.patient.last_name} (${item.patient.age} yrs) (OP No:${item.patient.id})`
                         : `OTC: ${item.patient_name}`}
                     </div>
 
@@ -458,7 +466,7 @@ function Pharmacist() {
               setIsMenuOpen(false); // close menu
             }}
           >
-            New Pharmacy Expense
+            Expenses
           </button>
 
           <button
@@ -473,6 +481,19 @@ function Pharmacist() {
             }}
           >
             Medicines
+          </button>
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "allSales" ? styles.active : ""
+            }`}
+            onClick={() => {
+              setActiveView("allSales");
+              setSelectedVisit(null);
+              setServerError("");
+              setIsMenuOpen(false);
+            }}
+          >
+            All Sales
           </button>
 
           {/* Mobile Logout */}

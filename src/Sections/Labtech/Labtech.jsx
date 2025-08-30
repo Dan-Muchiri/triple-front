@@ -5,9 +5,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import useAuthStore from "../AuthStore/Authstore";
 import { FaBars } from "react-icons/fa";
+import PatientInfo from "../Doctor/PatientInfo";
+import LabPastVisits from "./PastLabVisits";
 
 function LabTech() {
   const [visits, setVisits] = useState([]);
+  const [pastLabVisits, setPastLabVisits] = useState([]);
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [testRequests, setTestRequests] = useState([]);
   const [selectedTestRequest, setSelectedTestRequest] = useState(null);
@@ -31,7 +34,19 @@ function LabTech() {
     try {
       const res = await fetch("https://server.tripletsmediclinic.co.ke/visits");
       const data = await res.json();
+
+      // Waiting lab patients
       setVisits(data.filter((v) => v.stage === "waiting_lab"));
+
+      // ✅ Past lab visits (has lab test requests and not waiting_lab anymore)
+      const pastLabs = data.filter((v) => {
+        const allTests = [
+          ...(v.test_requests || []),
+          ...(v.direct_test_requests || []),
+        ];
+        return allTests.some((t) => t.category === "lab");
+      });
+      setPastLabVisits(pastLabs);
     } catch (err) {
       console.error("Failed to fetch visits:", err);
     }
@@ -44,83 +59,81 @@ function LabTech() {
   }, [fetchVisits]);
 
   const fetchTestRequests = async (visitId) => {
-  try {
-    const res = await fetch(`https://server.tripletsmediclinic.co.ke/visits/${visitId}`);
-    const data = await res.json();
-    
+    try {
+      const res = await fetch(`https://server.tripletsmediclinic.co.ke/visits/${visitId}`);
+      const data = await res.json();
 
-    if (data) {
-      // merge normal and direct test requests
-      const allTests = [
-        ...(data.test_requests || []),
-        ...(data.direct_test_requests || []),
-      ];
+      if (data) {
+        // merge normal and direct test requests
+        const allTests = [
+          ...(data.test_requests || []),
+          ...(data.direct_test_requests || []),
+        ];
 
-      // only keep lab category tests
-      const labTests = allTests.filter((t) => t.category === "lab");
+        // only keep lab category tests
+        const labTests = allTests.filter((t) => t.category === "lab");
 
-      setTestRequests(labTests);
-    } else {
-      setTestRequests([]);
+        setTestRequests(labTests);
+      } else {
+        setTestRequests([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch test requests:", err);
     }
-  } catch (err) {
-    console.error("Failed to fetch test requests:", err);
-  }
-};
-
+  };
 
   const handleCompleteVisit = async () => {
-  try {
-    // 1. Fetch the full visit with all its test requests + consultation info
-    const res = await fetch(`https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`);
-    const visitData = await res.json();
+    try {
+      // 1. Fetch the full visit with all its test requests + consultation info
+      const res = await fetch(
+        `https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`
+      );
+      const visitData = await res.json();
 
-    let nextStage = "reception"; // default fallback
+      let nextStage = "reception"; // default fallback
 
-    // Merge test_requests + direct_test_requests
-    const allTests = [
-      ...(visitData.test_requests || []),
-      ...(visitData.direct_test_requests || []),
-    ];
+      // Merge test_requests + direct_test_requests
+      const allTests = [
+        ...(visitData.test_requests || []),
+        ...(visitData.direct_test_requests || []),
+      ];
 
-    // 2. Check if there are pending imaging test requests
-    const pendingImaging = allTests.some(
-      (t) => t.category === "imaging" && t.status === "pending"
-    );
+      // 2. Check if there are pending imaging test requests
+      const pendingImaging = allTests.some(
+        (t) => t.category === "imaging" && t.status === "pending"
+      );
 
-    if (pendingImaging) {
-      nextStage = "waiting_imaging";
-    } else if (!visitData.consultation) {
-      // 3. No consultation yet
-      nextStage = "reception";
-    } else {
-      // 4. Consultation exists
-      nextStage = "waiting_consultation";
-    }
-
-    // 5. Update visit stage
-    const updateRes = await fetch(
-      `https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage: nextStage }),
+      if (pendingImaging) {
+        nextStage = "waiting_imaging";
+      } else if (!visitData.consultation) {
+        // 3. No consultation yet
+        nextStage = "reception";
+      } else {
+        // 4. Consultation exists
+        nextStage = "waiting_consultation";
       }
-    );
 
-    if (!updateRes.ok) {
-      throw new Error("Failed to update visit stage");
+      // 5. Update visit stage
+      const updateRes = await fetch(
+        `https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stage: nextStage }),
+        }
+      );
+
+      if (!updateRes.ok) {
+        throw new Error("Failed to update visit stage");
+      }
+
+      alert(`Visit updated to ${nextStage.replace("_", " ")}.`);
+      setActiveView("waitingLab");
+    } catch (error) {
+      console.error("Error updating visit:", error);
+      alert("Failed to update visit stage.");
     }
-
-    alert(`Visit updated to ${nextStage.replace("_", " ")}.`);
-    setActiveView("waitingLab");
-  } catch (error) {
-    console.error("Error updating visit:", error);
-    alert("Failed to update visit stage.");
-  }
-};
-
-
+  };
 
   const handleViewTests = (visit) => {
     setSelectedVisit(visit);
@@ -182,6 +195,24 @@ function LabTech() {
 
   const renderView = () => {
     switch (activeView) {
+      case "pastLabVisits":
+        return (
+          <LabPastVisits
+            pastLabVisits={pastLabVisits}
+            onViewPatientInfo={(visit) => {
+              setSelectedVisit(visit);
+              setActiveView("patientInfo");
+            }}
+          />
+        );
+
+      case "patientInfo":
+        return (
+          <PatientInfo
+            visitData={selectedVisit}
+            onBack={() => setActiveView("waitingLab")}
+          />
+        );
       case "testRequests":
         return (
           <div className={styles.sectionBox}>
@@ -353,16 +384,28 @@ function LabTech() {
                     <div>
                       {visit.patient.first_name} {visit.patient.last_name} (
                       {visit.patient.age} yrs)
+                      (OP No: {visit.patient.id})
                     </div>
                     <div>
                       Created: {new Date(visit.created_at).toLocaleString()}
                     </div>
-                    <button
-                      className={styles.btn}
-                      onClick={() => handleViewTests(visit)}
-                    >
-                      View Test Requests
-                    </button>
+                    <div className={styles.buttonGroup}>
+                      <button
+                        className={styles.btn}
+                        onClick={() => handleViewTests(visit)}
+                      >
+                        View Test Requests
+                      </button>
+                      <button
+                        className={styles.btn}
+                        onClick={() => {
+                          setSelectedVisit(visit);
+                          setActiveView("patientInfo"); // ✅ add this view like in Doctor.jsx
+                        }}
+                      >
+                        Patient Info
+                      </button>
+                    </div>
                   </li>
                 ))
               )}
@@ -392,6 +435,20 @@ function LabTech() {
           >
             Waiting Lab
           </button>
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "pastLabVisits" ? styles.active : ""
+            }`}
+            onClick={() => {
+              setActiveView("pastLabVisits");
+              setSelectedVisit(null);
+              setServerError("");
+              setIsMenuOpen(false);
+            }}
+          >
+            Past Visits
+          </button>
+
           {/* Mobile Logout */}
           <button
             className={`${styles.logoutBtn} ${styles.mobileLogout}`}

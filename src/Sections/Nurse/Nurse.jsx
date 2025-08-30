@@ -206,6 +206,7 @@ function Nurse() {
                     <div>
                       {visit.patient.first_name} {visit.patient.last_name} (
                       {visit.patient.age} yrs)
+                      (OP No: {visit.patient.id})
                     </div>
                     <div>
                       Created: {new Date(visit.created_at).toLocaleString()}
