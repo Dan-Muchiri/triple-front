@@ -211,7 +211,11 @@ function Pharmacist() {
             <div className={styles.buttonGroup}>
               <button
                 className={`${styles.btn} ${styles.cancelBtn}`}
-                onClick={() => setActiveView("waitingPharmacy")}
+                onClick={() => {
+                  setActiveView("waitingPharmacy");
+                  setPrescriptions([]); // ✅ clear when going back
+                  setSelectedVisit(null);
+                }}
               >
                 Back
               </button>
@@ -351,6 +355,18 @@ function Pharmacist() {
 
                     <div>
                       Created: {new Date(item.created_at).toLocaleString()}
+                    </div>
+
+                    {/* ✅ Show balance */}
+                    <div>
+                      <strong>Balance:</strong>{" "}
+                      {item.balance === 0 ? (
+                        <span style={{ color: "green" }}>
+                          Fully Paid (0 Ksh)
+                        </span>
+                      ) : (
+                        <span style={{ color: "red" }}>{item.balance} Ksh</span>
+                      )}
                     </div>
 
                     {/* ✅ Show sales if OTC sale */}

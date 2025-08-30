@@ -173,13 +173,14 @@ export default function SearchPatients({
                   national_id: e.target.national_id.value,
                   phone_number: e.target.phone_number.value,
                   email: e.target.email.value,
-                  next_of_kin_phone: e.target.next_of_kin_phone.value, // ✅ added
-                  location: e.target.location.value, // ✅ added
+                  next_of_kin_name: e.target.next_of_kin_name.value, // ✅ NEW
+                  next_of_kin_phone: e.target.next_of_kin_phone.value,
+                  location: e.target.location.value,
                 };
 
                 try {
                   const res = await fetch(
-                    `https://server.tripletsmediclinic.co.ke/patients/${selectedPatient.id}`,
+                    `https://server.tripletsmediclinic.co.ke/${selectedPatient.id}`,
                     {
                       method: "PATCH",
                       headers: { "Content-Type": "application/json" },
@@ -216,11 +217,12 @@ export default function SearchPatients({
                   "national_id",
                   "phone_number",
                   "email",
-                  "next_of_kin_phone", // ✅ render
-                  "location", // ✅ render
+                  "next_of_kin_name", // ✅ NEW
+                  "next_of_kin_phone",
+                  "location",
                 ].map((field) => (
                   <div key={field} className={styles.formGroup}>
-                    <label>{field.replace("_", " ")}</label>
+                    <label>{field.replaceAll("_", " ")}</label>
                     {field === "gender" ? (
                       <select
                         name="gender"

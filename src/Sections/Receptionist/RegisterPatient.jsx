@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import styles from './ReceptionistStyles.module.css';
+import React, { useState, useEffect } from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import styles from "./ReceptionistStyles.module.css";
 
 export default function RegisterPatient({ fetchPatients, setActiveView }) {
   const [serverError, setServerError] = useState("");
@@ -15,46 +15,51 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
 
   const formik = useFormik({
     initialValues: {
-      first_name: '',
-      last_name: '',
-      gender: '',
-      dob: '',
-      national_id: '',
-      phone_number: '',
-      email: '',
-      next_of_kin_phone: '',   // ✅ new field
-      location: '',            // ✅ new field
+      first_name: "",
+      last_name: "",
+      gender: "",
+      dob: "",
+      national_id: "",
+      phone_number: "",
+      email: "",
+      next_of_kin_name: "", // ✅ new
+      next_of_kin_phone: "",
+      location: "",
     },
+
     validationSchema: Yup.object({
-      first_name: Yup.string().required('Required'),
-      last_name: Yup.string().required('Required'),
-      gender: Yup.string().oneOf(['male', 'female']).required('Required'),
-      dob: Yup.date().required('Required'),
+      first_name: Yup.string().required("Required"),
+      last_name: Yup.string().required("Required"),
+      gender: Yup.string().oneOf(["male", "female"]).required("Required"),
+      dob: Yup.date().required("Required"),
       national_id: Yup.string(),
       phone_number: Yup.string(),
-      email: Yup.string().email('Invalid email'),
-      next_of_kin_phone: Yup.string(),  // you could add phone validation here
+      email: Yup.string().email("Invalid email"),
+      next_of_kin_name: Yup.string(), // ✅ new
+      next_of_kin_phone: Yup.string(),
       location: Yup.string(),
     }),
 
     onSubmit: async (values, { resetForm }) => {
       try {
         setServerError("");
-        const res = await fetch('https://server.tripletsmediclinic.co.ke/patients', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("https://server.tripletsmediclinic.co.ke/patients", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(values),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.error || data.message || 'Unknown error occurred');
+          throw new Error(
+            data.error || data.message || "Unknown error occurred"
+          );
         }
 
         resetForm();
         fetchPatients();
-        setActiveView('search');
+        setActiveView("search");
       } catch (error) {
         console.error("Registration error:", error);
         setServerError(error.message || "Unexpected error");
@@ -63,7 +68,10 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
   });
 
   return (
-    <form onSubmit={formik.handleSubmit} className={`${styles.sectionBox} ${styles.flexOne}`}>
+    <form
+      onSubmit={formik.handleSubmit}
+      className={`${styles.sectionBox} ${styles.flexOne}`}
+    >
       <h2 className={styles.sectionTitle}>Register New Patient</h2>
 
       {[
@@ -74,12 +82,13 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
         "national_id",
         "phone_number",
         "email",
-        "next_of_kin_phone",   // ✅ render kin phone
-        "location",            // ✅ render location
+        "next_of_kin_name", // ✅ new
+        "next_of_kin_phone",
+        "location",
       ].map((field) => (
         <div className={styles.formGroup} key={field}>
-          <label>{field.replace('_', ' ')}</label>
-          {field === 'gender' ? (
+          <label>{field.replace(/_/g, " ")}</label>
+          {field === "gender" ? (
             <select
               name="gender"
               value={formik.values.gender}
@@ -93,7 +102,7 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
             </select>
           ) : (
             <input
-              type={field === 'dob' ? 'date' : 'text'}
+              type={field === "dob" ? "date" : "text"}
               name={field}
               value={formik.values[field]}
               onChange={formik.handleChange}
@@ -108,7 +117,7 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
       ))}
 
       {serverError && (
-        <div className={styles.error} style={{ marginBottom: '1rem' }}>
+        <div className={styles.error} style={{ marginBottom: "1rem" }}>
           {serverError}
         </div>
       )}

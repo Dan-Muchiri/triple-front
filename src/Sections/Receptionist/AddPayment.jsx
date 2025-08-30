@@ -63,7 +63,7 @@ export default function AddPayment({ visit, setActiveView }) {
       });
       visit.prescriptions?.forEach((p) => {
         servicesList.push(
-          `${p.medication_name} × ${p.dispensed_units} — KES ${p.price}`
+          `${p.medication_name} × ${p.dispensed_units} — KES ${p.total_price}`
         );
       });
     }
@@ -170,7 +170,8 @@ export default function AddPayment({ visit, setActiveView }) {
               ))}
               {visit.prescriptions?.map((p) => (
                 <li key={`pres-${p.id}`}>
-                  {p.medication_name} × {p.dispensed_units} — KES {p.price}
+                  {p.medication_name} × {p.dispensed_units} — KES{" "}
+                  {p.total_price}
                 </li>
               ))}
             </>

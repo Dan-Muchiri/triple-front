@@ -46,10 +46,9 @@ function AdminAnalytics() {
 
   const {
     metrics,
-    pharmacy_breakdown,
-    top_medicines,
-    top_lab_tests,
-    top_imaging_tests,
+    top_medicines_this_month,
+    top_lab_tests_this_month,
+    top_imaging_tests_this_month,
   } = analytics;
 
   return (
@@ -59,11 +58,10 @@ function AdminAnalytics() {
         {[
           "all_revenue",
           "total_revenue_past_month",
-          "total_pharmacy_sales",
           "total_patients",
-          "patients_this_month",
-          "lab_tests_done",
-          "imaging_tests_done",
+          "patients_this_month",  
+          "lab_tests_done_this_month",
+          "imaging_tests_done_this_month",
         ].map((key) => (
           <div key={key} className={styles.card}>
             <h4>{key.replace(/_/g, " ").toUpperCase()}</h4>
@@ -72,41 +70,12 @@ function AdminAnalytics() {
         ))}
       </div>
 
-      {/* --- 3. Pharmacy Breakdown --- */}
-      <div className={styles.chartBox}>
-        <h3>Pharmacy Sales Breakdown</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={Object.entries(pharmacy_breakdown).map(([name, value]) => ({
-                name,
-                value,
-              }))}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={90}
-              label
-            >
-              {Object.entries(pharmacy_breakdown).map(([name], index) => (
-                <Cell
-                  key={`cell-${name}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend /> {/* 👈 Added legend to show OTC vs Prescription */}
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
 
       {/* --- 4. Top 10 Medicines --- */}
       <div className={styles.chartBox}>
-        <h3>Top 10 Prescribed Medicines</h3>
+        <h3>Top 10 Ordered Medicines</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={top_medicines}>
+          <BarChart data={top_medicines_this_month}>
             <XAxis dataKey="medicine" />
             <YAxis />
             <Tooltip />
@@ -118,9 +87,9 @@ function AdminAnalytics() {
 
       {/* --- 5. Top Lab Tests --- */}
       <div className={styles.chartBox}>
-        <h3>Top 5 Lab Tests</h3>
+        <h3>Top 10 Lab Tests</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={top_lab_tests}>
+          <BarChart data={top_lab_tests_this_month}>
             <XAxis dataKey="test" />
             <YAxis />
             <Tooltip />
@@ -132,9 +101,9 @@ function AdminAnalytics() {
 
       {/* --- 6. Top Imaging Tests --- */}
       <div className={styles.chartBox}>
-        <h3>Top 5 Imaging Tests</h3>
+        <h3>Top 10 Imaging Tests</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={top_imaging_tests}>
+          <BarChart data={top_imaging_tests_this_month}>
             <XAxis dataKey="test" />
             <YAxis />
             <Tooltip />
@@ -143,7 +112,6 @@ function AdminAnalytics() {
           </BarChart>
         </ResponsiveContainer>
       </div>
-
     </div>
   );
 }

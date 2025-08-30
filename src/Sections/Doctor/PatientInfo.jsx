@@ -1,7 +1,6 @@
 import React from "react";
 import styles from "./DoctorStyles.module.css";
 
-
 function PatientInfo({ visitData, onBack }) {
   if (!visitData) return null;
 
@@ -18,8 +17,7 @@ function PatientInfo({ visitData, onBack }) {
     patient = visit.patient;
   }
 
-const triage = visit.triage; // ✅ define triage
-
+  const triage = visit.triage; // ✅ define triage
 
   // Past visits (excluding current one)
   const pastVisits = patient.visits?.filter((v) => v.id !== visit.id) || [];
@@ -35,8 +33,8 @@ const triage = visit.triage; // ✅ define triage
         <strong>Name:</strong> {patient.first_name} {patient.last_name}
       </div>
       <div>
-    <strong>OP No:</strong> {patient.id}
-  </div>
+        <strong>OP No:</strong> {patient.id}
+      </div>
       <div>
         <strong>Gender:</strong> {patient.gender}
       </div>
@@ -49,19 +47,49 @@ const triage = visit.triage; // ✅ define triage
       <div>
         <strong>Email:</strong> {patient.email}
       </div>
+      {/* ✅ Add Location */}
+      <div>
+        <strong>Location:</strong> {patient.location || "N/A"}
+      </div>
+
+      {/* ✅ Add Next of Kin */}
+      <div>
+        <strong>Next of Kin Name:</strong> {patient.next_of_kin_name || "N/A"}
+      </div>
+      <div>
+        <strong>Next of Kin Phone:</strong> {patient.next_of_kin_phone || "N/A"}
+      </div>
 
       <h3>Triage Record</h3>
       {triage ? (
         <>
-          <div><strong>Temperature:</strong> {triage.temperature}°C</div>
-          <div><strong>Weight:</strong> {triage.weight} kg</div>
-          <div><strong>Height:</strong> {triage.height} cm</div>
-          <div><strong>BMI:</strong> {triage.bmi}</div>
-          <div><strong>Blood Pressure:</strong> {triage.blood_pressure}</div>
-          <div><strong>Pulse Rate:</strong> {triage.pulse_rate}</div>
-          <div><strong>Respiration Rate:</strong> {triage.respiration_rate}</div>
-          <div><strong>SpO₂:</strong> {triage.spo2}%</div>
-          <div><strong>Notes:</strong> {triage.notes}</div>
+          <div>
+            <strong>Temperature:</strong> {triage.temperature}°C
+          </div>
+          <div>
+            <strong>Weight:</strong> {triage.weight} kg
+          </div>
+          <div>
+            <strong>Height:</strong> {triage.height} cm
+          </div>
+          <div>
+            <strong>BMI:</strong> {triage.bmi}
+          </div>
+          <div>
+            <strong>Blood Pressure:</strong> {triage.blood_pressure}
+          </div>
+          <div>
+            <strong>Pulse Rate:</strong> {triage.pulse_rate}
+          </div>
+          <div>
+            <strong>Respiration Rate:</strong> {triage.respiration_rate}
+          </div>
+          <div>
+            <strong>SpO₂:</strong> {triage.spo2}%
+          </div>
+          <div>
+            <strong>Notes:</strong> {triage.notes}
+          </div>
         </>
       ) : (
         <p>No triage record found.</p>
@@ -75,7 +103,8 @@ const triage = visit.triage; // ✅ define triage
               const isEmptyVisit =
                 !v.consultation &&
                 !v.triage_id &&
-                (!v.direct_test_requests || v.direct_test_requests.length === 0) &&
+                (!v.direct_test_requests ||
+                  v.direct_test_requests.length === 0) &&
                 (!v.test_requests || v.test_requests.length === 0) &&
                 (!v.prescriptions || v.prescriptions.length === 0);
 
@@ -94,13 +123,15 @@ const triage = visit.triage; // ✅ define triage
                       {/* Direct Test Requests */}
                       {v.direct_test_requests?.length > 0 && (
                         <div>
-                          <p><em>Direct Tests</em></p>
+                          <p>
+                            <em>Direct Tests</em>
+                          </p>
                           <ul>
                             {v.direct_test_requests.map((t) => (
                               <li key={t.id}>
                                 {t.test_type} ({t.category}){" "}
-                                {t.notes && ` - ${t.notes}`}{" "}
-                                - {t.results || "Pending"}
+                                {t.notes && ` - ${t.notes}`} -{" "}
+                                {t.results || "Pending"}
                               </li>
                             ))}
                           </ul>
