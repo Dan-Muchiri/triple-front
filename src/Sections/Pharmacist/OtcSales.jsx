@@ -4,6 +4,7 @@ import styles from "../Labtech/LabtechStyles.module.css";
 function OtcSales({ setActiveView }) {
   const [allMedicines, setAllMedicines] = useState([]);
   const [otcSale, setOtcSale] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [newSale, setNewSale] = useState({
     patient_name: "",
     medicine_id: null,
@@ -77,6 +78,7 @@ function OtcSales({ setActiveView }) {
       return;
     }
     try {
+      setSubmitting(true);
       const res = await api("/otc_sales", {
         method: "POST",
         body: JSON.stringify({ patient_name: newSale.patient_name }),
@@ -86,6 +88,8 @@ function OtcSales({ setActiveView }) {
       setOtcSale(data);
     } catch (err) {
       console.log("Error: " + err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -95,6 +99,7 @@ function OtcSales({ setActiveView }) {
       return;
     }
     try {
+      setSubmitting(true);
       const res = await api("/pharmacy_sales", {
         method: "POST",
         body: JSON.stringify({
@@ -120,6 +125,8 @@ function OtcSales({ setActiveView }) {
       });
     } catch (err) {
       alert("Error: " + err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -141,9 +148,10 @@ function OtcSales({ setActiveView }) {
           <button
             onClick={handleCreateOtc}
             className={styles.btn}
-            style={{ marginTop: "1rem" }} // 👈 add inline margin
+            style={{ marginTop: "1rem" }}
+            disabled={submitting}
           >
-            Create OTC Sale
+            {submitting ? "Creating..." : "Create OTC Sale"}
           </button>
         </div>
       )}
@@ -200,8 +208,9 @@ function OtcSales({ setActiveView }) {
             onClick={handleAddSale}
             style={{ marginTop: "1rem" }}
             className={styles.btn}
+            disabled={submitting}
           >
-            Add Sale
+            {submitting ? "Adding..." : "Add Sale"}
           </button>
 
           {sales.length > 0 && (
@@ -220,8 +229,10 @@ function OtcSales({ setActiveView }) {
               <div className={styles.sectionTitle}>Total: KES {total}</div>
 
               <button
+                disabled={submitting}
                 onClick={async () => {
                   try {
+                    setSubmitting(true);
                     const res = await api(`/otc_sales/${otcSale.id}`, {
                       method: "PATCH",
                       body: JSON.stringify({ stage: "reception" }),
@@ -234,11 +245,13 @@ function OtcSales({ setActiveView }) {
                     setActiveView("waitingPharmacy");
                   } catch (err) {
                     alert("Error: " + err.message);
+                  } finally {
+                    setSubmitting(false);
                   }
                 }}
                 className={styles.btn}
               >
-                Submit to Reception
+                {submitting ? "Submitting..." : "Submit to Reception"}
               </button>
             </>
           )}

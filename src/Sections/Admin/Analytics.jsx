@@ -58,6 +58,8 @@ function AdminAnalytics() {
         {[
           "all_revenue",
           "total_revenue_past_month",
+          "pharmacy_expenses_this_month",  
+          "other_expenses_this_month", 
           "total_patients",
           "patients_this_month",  
           "lab_tests_done_this_month",

@@ -317,13 +317,18 @@ function Pharmacist() {
             {serverError && <div className={styles.error}>{serverError}</div>}
 
             <div className={styles.buttonGroup}>
-              <button type="submit" className={styles.btn}>
-                Save
+              <button
+                type="submit"
+                className={styles.btn}
+                disabled={formik.isSubmitting}
+              >
+                {formik.isSubmitting ? "Saving..." : "Save"}
               </button>
               <button
                 type="button"
                 className={`${styles.btn} ${styles.cancelBtn}`}
                 onClick={() => setActiveView("prescriptions")}
+                disabled={formik.isSubmitting}
               >
                 Cancel
               </button>

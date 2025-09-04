@@ -15,6 +15,7 @@ function Doctor() {
   const [consultationId, setConsultationId] = useState(null);
   const [serverError, setServerError] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [submittingId, setSubmittingId] = useState(null);
 
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
@@ -55,6 +56,7 @@ function Doctor() {
 
   const handleStartOrEditConsultation = async (visit) => {
     try {
+      setSubmittingId(visit.id);
       if (visit.consultation) {
         setConsultationId(visit.consultation.id);
         setSelectedVisit(visit);
@@ -82,6 +84,8 @@ function Doctor() {
     } catch (err) {
       console.error(err);
       setServerError(err.message);
+    } finally {
+      setSubmittingId(null); // ✅ re-enable
     }
   };
 
@@ -176,14 +180,18 @@ function Doctor() {
                       <button
                         className={styles.btn}
                         onClick={() => handleViewPatientInfo(visit)}
+                        disabled={submittingId === visit.id} // ✅ disable while submitting
                       >
                         Patient Info
                       </button>
                       <button
                         className={styles.btn}
                         onClick={() => handleStartOrEditConsultation(visit)}
+                        disabled={submittingId === visit.id} // ✅ disable while submitting
                       >
-                        {visit.consultation
+                        {submittingId === visit.id
+                          ? "Processing..."
+                          : visit.consultation
                           ? "Edit Consultation"
                           : "Start Consultation"}
                       </button>

@@ -1,3 +1,6 @@
+/* =============================
+   Clinic Gallery Styles
+   ============================= */
 .clinic-gallery {
   padding: 3rem 2rem;
   text-align: center;
@@ -5,36 +8,94 @@
 }
 
 .gallery-title {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 2rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 2.5rem;
   color: #2c3e50;
+  letter-spacing: -0.5px;
 }
 
+/* === Grid Layout === */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
   justify-items: center;
 }
 
+/* === Card Styling === */
 .gallery-item {
+  position: relative;
   overflow: hidden;
   border-radius: 1rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  background: white;
-  transition: transform 0.3s ease;
-  max-width: 280px; /* keeps portrait look */
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
 }
 
-.gallery-item img {
+.gallery-item:hover {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* === Media Content === */
+.gallery-item img,
+.gallery-video {
   width: 100%;
-  height: 380px; /* keeps portrait height */
+  aspect-ratio: 9 / 16; /* Keeps portrait consistency */
   object-fit: cover;
   border-radius: 1rem;
   transition: transform 0.4s ease;
 }
 
-.gallery-item:hover img {
-  transform: scale(1.05);
+/* Hover Zoom Effect */
+.gallery-item:hover img,
+.gallery-item:hover .gallery-video {
+  transform: scale(1.07);
+}
+
+/* === Overlay on Hover === */
+.gallery-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  border-radius: 1rem;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover::after {
+  opacity: 1;
+}
+
+/* === Video Container === */
+.video-container {
+  position: relative;
+}
+
+/* === Play Button (Glassmorphism style) === */
+.play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  color: white;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.play-button:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translate(-50%, -50%) scale(1.1);
 }

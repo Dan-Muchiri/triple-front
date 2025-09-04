@@ -17,6 +17,7 @@ function Imaging() {
   const [activeView, setActiveView] = useState("waitingImaging");
   const [serverError, setServerError] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
@@ -84,6 +85,7 @@ function Imaging() {
 
   const handleCompleteVisit = async () => {
     try {
+      setIsSubmitting(true);
       // 1. Fetch the full visit with all its test requests + direct test requests + consultation info
       const res = await fetch(
         `https://server.tripletsmediclinic.co.ke/visits/${selectedVisit.id}`
@@ -132,6 +134,8 @@ function Imaging() {
     } catch (error) {
       console.error("Error updating visit:", error);
       alert("Failed to update visit stage.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -167,6 +171,7 @@ function Imaging() {
     }),
     onSubmit: async (values) => {
       try {
+        setIsSubmitting(true);
         const res = await fetch(
           `https://server.tripletsmediclinic.co.ke/test_requests/${selectedTestRequest.id}`,
           {
@@ -189,6 +194,8 @@ function Imaging() {
       } catch (err) {
         console.error("Error updating test request:", err);
         setServerError(err.message);
+      } finally {
+        setIsSubmitting(false);
       }
     },
   });
@@ -280,8 +287,9 @@ function Imaging() {
               <button
                 className={`${styles.btn} ${styles.completeBtn}`}
                 onClick={handleCompleteVisit}
+                disabled={isSubmitting}
               >
-                Complete
+                {isSubmitting ? "Completing..." : "Complete"}
               </button>
               <button
                 className={`${styles.btn} ${styles.cancelBtn}`}
@@ -351,8 +359,12 @@ function Imaging() {
             {serverError && <div className={styles.error}>{serverError}</div>}
 
             <div className={styles.buttonGroup}>
-              <button type="submit" className={styles.btn}>
-                Save
+              <button
+                type="submit"
+                className={styles.btn}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Saving..." : "Save"}
               </button>
               <button
                 type="button"
@@ -380,8 +392,7 @@ function Imaging() {
                   <li key={visit.id} className={styles.patientCard}>
                     <div>
                       {visit.patient.first_name} {visit.patient.last_name} (
-                      {visit.patient.age} yrs)
-                      (OP No: {visit.patient.id})
+                      {visit.patient.age} yrs) (OP No: {visit.patient.id})
                     </div>
                     <div>
                       Created: {new Date(visit.created_at).toLocaleString()}

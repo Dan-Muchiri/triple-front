@@ -1,14 +1,27 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import "./ClinicGallery.css";
 
 const ClinicGallery = () => {
-  // replace with your actual photo file paths in /public/images
   const photos = [
     "/reception.avif",
     "/banner.avif",
     "/mission.avif",
     "/memory.avif",
   ];
+
+  const videoRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const handleVideoToggle = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   return (
     <section id="gallery" className="clinic-gallery">
@@ -19,6 +32,18 @@ const ClinicGallery = () => {
             <img src={photo} alt={`Clinic ${index + 1}`} />
           </div>
         ))}
+
+        {/* 🎥 Custom play button video */}
+        <div className="gallery-item video-container" onClick={handleVideoToggle}>
+          <video
+            ref={videoRef}
+            src="/zawadi.mp4"
+            loop
+            playsInline
+            className="gallery-video"
+          />
+          {!isPlaying && <div className="play-button">▶</div>}
+        </div>
       </div>
     </section>
   );

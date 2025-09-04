@@ -5,6 +5,7 @@ import styles from "./ReceptionistStyles.module.css";
 
 export default function RegisterPatient({ fetchPatients, setActiveView }) {
   const [serverError, setServerError] = useState("");
+  const [submitting, setSubmitting] = useState(false); 
 
   useEffect(() => {
     if (serverError) {
@@ -42,6 +43,7 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
 
     onSubmit: async (values, { resetForm }) => {
       try {
+         setSubmitting(true);
         setServerError("");
         const res = await fetch("https://server.tripletsmediclinic.co.ke/patients", {
           method: "POST",
@@ -63,6 +65,8 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
       } catch (error) {
         console.error("Registration error:", error);
         setServerError(error.message || "Unexpected error");
+      } finally {
+        setSubmitting(false); // ✅ stop loading
       }
     },
   });
@@ -123,8 +127,12 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
       )}
 
       <div className={styles.buttonGroup}>
-        <button type="submit" className={`${styles.btn} ${styles.registerBtn}`}>
-          Register
+        <button
+          type="submit"
+          className={`${styles.btn} ${styles.registerBtn}`}
+          disabled={submitting} // ✅ prevent duplicate
+        >
+          {submitting ? "Registering..." : "Register"} {/* ✅ loading text */}
         </button>
         <button
           type="button"

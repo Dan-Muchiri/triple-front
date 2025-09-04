@@ -162,9 +162,14 @@ function Nurse() {
                 ))}
 
                 <div className={styles.buttonGroup}>
-                  <button type="submit" className={styles.btn}>
-                    Submit Triage
+                  <button
+                    type="submit"
+                    className={styles.btn}
+                    disabled={formik.isSubmitting} // ✅ disable while submitting
+                  >
+                    {formik.isSubmitting ? "Submitting..." : "Submit Triage"}
                   </button>
+
                   <button
                     type="button"
                     className={`${styles.btn} ${styles.cancelBtn}`}
@@ -174,6 +179,7 @@ function Nurse() {
                       setSelectedVisit(null);
                       setActiveView("waitingTriage");
                     }}
+                    disabled={formik.isSubmitting} // ✅ also disable cancel during submit
                   >
                     Cancel
                   </button>
@@ -205,8 +211,7 @@ function Nurse() {
                   <li key={visit.id} className={styles.patientCard}>
                     <div>
                       {visit.patient.first_name} {visit.patient.last_name} (
-                      {visit.patient.age} yrs)
-                      (OP No: {visit.patient.id})
+                      {visit.patient.age} yrs) (OP No: {visit.patient.id})
                     </div>
                     <div>
                       Created: {new Date(visit.created_at).toLocaleString()}

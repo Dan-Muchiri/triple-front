@@ -13,6 +13,7 @@ export default function AddPayment({ visit, setActiveView }) {
 
   const [paymentId, setPaymentId] = useState(null);
   const [serverError, setServerError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Auto-fill amount with backend balance
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function AddPayment({ visit, setActiveView }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError("");
-
+    setIsSubmitting(true);
     // Build service description dynamically
     let servicesList = [];
 
@@ -104,6 +105,8 @@ export default function AddPayment({ visit, setActiveView }) {
     } catch (err) {
       console.error("❌ Network or parsing error:", err);
       setServerError("Unexpected error occurred");
+    } finally {
+      setIsSubmitting(false); // 🔓 re-enable buttons
     }
   };
 
@@ -137,7 +140,6 @@ export default function AddPayment({ visit, setActiveView }) {
     <div className={`${styles.sectionBox} ${styles.flexOne}`}>
       <h2 className={styles.sectionTitle}>Add Payment for Visit #{visit.id}</h2>
 
-      {/* Services Breakdown */}
       {/* Services Breakdown */}
       <div className={styles.formGroup}>
         <label>Services</label>
@@ -238,8 +240,12 @@ export default function AddPayment({ visit, setActiveView }) {
 
         <div className={styles.modalActions}>
           <div className={`${styles.buttonGroup}`}>
-            <button type="submit" className={`${styles.btn}`}>
-              Record Payment
+            <button
+              type="submit"
+              className={styles.btn}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Recording..." : "Record Payment"}
             </button>
             <button
               type="button"

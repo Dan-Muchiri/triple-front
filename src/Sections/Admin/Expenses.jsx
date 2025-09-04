@@ -10,6 +10,7 @@ function PharmacyExpenses() {
   const [serverError, setServerError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [showNewModal, setShowNewModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 🔹 Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,6 +72,7 @@ function PharmacyExpenses() {
         .required("Total cost is required"),
     }),
     onSubmit: async (values, { resetForm }) => {
+      setIsSubmitting(true);
       try {
         const res = await fetch("https://server.tripletsmediclinic.co.ke/pharmacy_expenses", {
           method: "POST",
@@ -91,6 +93,8 @@ function PharmacyExpenses() {
       } catch (err) {
         console.error(err);
         setServerError(err.message);
+      } finally {
+        setIsSubmitting(false); // ⬅️ end
       }
     },
   });
@@ -308,8 +312,12 @@ function PharmacyExpenses() {
           {serverError && <div className={styles.error}>{serverError}</div>}
 
           <div className={styles.buttonGroup}>
-            <button type="submit" className={styles.btn}>
-              Save
+            <button
+              type="submit"
+              className={styles.btn}
+              disabled={isSubmitting} // ⬅️ block while saving
+            >
+              {isSubmitting ? "Saving..." : "Save"} {/* ⬅️ feedback */}
             </button>
             <button
               type="button"

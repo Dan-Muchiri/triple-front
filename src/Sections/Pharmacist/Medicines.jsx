@@ -58,29 +58,28 @@ function Medicines() {
   };
 
   const handleDelete = async (medicineId) => {
-  if (!window.confirm("Are you sure you want to delete this medicine?"))
-    return;
-
-  try {
-    const res = await fetch(`https://server.tripletsmediclinic.co.ke/medicines/${medicineId}`, {
-      method: "DELETE",
-    });
-
-    const data = await res.json(); // ✅ always parse JSON
-
-    if (!res.ok) {
-      alert(data.message || data.error || "Failed to delete medicine"); // ✅ show alert
+    if (!window.confirm("Are you sure you want to delete this medicine?"))
       return;
+
+    try {
+      const res = await fetch(`https://server.tripletsmediclinic.co.ke/medicines/${medicineId}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json(); // ✅ always parse JSON
+
+      if (!res.ok) {
+        alert(data.message || data.error || "Failed to delete medicine"); // ✅ show alert
+        return;
+      }
+
+      alert(data.message || "Medicine deleted successfully"); // ✅ success alert
+      fetchMedicines();
+    } catch (err) {
+      console.error("Error deleting medicine:", err);
+      alert(err.message); // ✅ show network error
     }
-
-    alert(data.message || "Medicine deleted successfully"); // ✅ success alert
-    fetchMedicines();
-  } catch (err) {
-    console.error("Error deleting medicine:", err);
-    alert(err.message); // ✅ show network error
-  }
-};
-
+  };
 
   // ✅ Formik for editing and new medicine
   const formik = useFormik({
@@ -392,12 +391,17 @@ function Medicines() {
           {serverError && <div className={styles.error}>{serverError}</div>}
 
           <div className={styles.buttonGroup}>
-            <button type="submit" className={styles.btn}>
-              Save
+            <button
+              type="submit"
+              className={styles.btn}
+              disabled={formik.isSubmitting}
+            >
+              {formik.isSubmitting ? "Saving..." : "Save"}
             </button>
             <button
               type="button"
               className={`${styles.btn} ${styles.cancelBtn}`}
+              disabled={formik.isSubmitting}
               onClick={() => {
                 setSelectedMedicine(null);
                 setShowNewModal(false);

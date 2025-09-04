@@ -13,6 +13,7 @@ export default function ConsultationForm({
   const [physicalExam, setPhysicalExam] = useState("");
   const [systemicExam, setSystemicExam] = useState("");
   const [notes, setNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // testRequests / prescriptions items have shape:
   // { _tempId?, id?, category, test_type, notes, saved?, saving? }
@@ -137,6 +138,7 @@ export default function ConsultationForm({
   // Start consultation if none exists (called by parent OR from here)
   const startConsultation = async () => {
     try {
+      setIsSubmitting(true);
       setServerError("");
       const res = await api("/consultations", {
         method: "POST",
@@ -155,6 +157,8 @@ export default function ConsultationForm({
     } catch (err) {
       console.error("Start consultation error:", err);
       setServerError(err.message || "Failed to start consultation");
+    } finally {
+      setIsSubmitting(false); // ✅ re-enable
     }
   };
 
@@ -399,6 +403,7 @@ export default function ConsultationForm({
     }
 
     try {
+      setIsSubmitting(true);
       setServerError("");
 
       // ✅ Only update the consultation, don’t touch the visit
@@ -424,6 +429,8 @@ export default function ConsultationForm({
     } catch (err) {
       console.error("complete consultation:", err);
       setServerError(err.message || "Failed to complete consultation");
+    } finally {
+      setIsSubmitting(false); // ✅ re-enable
     }
   };
 
@@ -438,8 +445,12 @@ export default function ConsultationForm({
             Consultation hasn't been started yet. Press start to create a
             consultation record.
           </div>
-          <button className={styles.btn} onClick={startConsultation}>
-            Start Consultation
+          <button
+            className={styles.btn}
+            onClick={startConsultation}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Starting..." : "Start Consultation"}
           </button>
         </div>
       )}
@@ -673,9 +684,9 @@ export default function ConsultationForm({
         <button
           className={styles.submitBtn}
           onClick={handleSubmit}
-          disabled={!consultationId}
+          disabled={!consultationId || isSubmitting}
         >
-          Submit Consultation
+          {isSubmitting ? "Submitting..." : "Submit Consultation"}
         </button>
         <button
           className={styles.cancelBtn}

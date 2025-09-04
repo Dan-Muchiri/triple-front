@@ -10,6 +10,7 @@ function Medicines() {
   const [serverError, setServerError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [showNewModal, setShowNewModal] = useState(false); // ✅ new state
+  const [submitting, setSubmitting] = useState(false);
 
   // 🔹 Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,29 +59,28 @@ function Medicines() {
   };
 
   const handleDelete = async (medicineId) => {
-  if (!window.confirm("Are you sure you want to delete this medicine?"))
-    return;
-
-  try {
-    const res = await fetch(`https://server.tripletsmediclinic.co.ke/medicines/${medicineId}`, {
-      method: "DELETE",
-    });
-
-    const data = await res.json(); // ✅ always parse JSON
-
-    if (!res.ok) {
-      alert(data.message || data.error || "Failed to delete medicine"); // ✅ show alert
+    if (!window.confirm("Are you sure you want to delete this medicine?"))
       return;
+
+    try {
+      const res = await fetch(`https://server.tripletsmediclinic.co.ke/medicines/${medicineId}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json(); // ✅ always parse JSON
+
+      if (!res.ok) {
+        alert(data.message || data.error || "Failed to delete medicine"); // ✅ show alert
+        return;
+      }
+
+      alert(data.message || "Medicine deleted successfully"); // ✅ success alert
+      fetchMedicines();
+    } catch (err) {
+      console.error("Error deleting medicine:", err);
+      alert(err.message); // ✅ show network error
     }
-
-    alert(data.message || "Medicine deleted successfully"); // ✅ success alert
-    fetchMedicines();
-  } catch (err) {
-    console.error("Error deleting medicine:", err);
-    alert(err.message); // ✅ show network error
-  }
-};
-
+  };
 
   // ✅ Formik for editing and new medicine
   const formik = useFormik({
@@ -107,6 +107,7 @@ function Medicines() {
       unit: Yup.string().required("Required"),
     }),
     onSubmit: async (values) => {
+      setSubmitting(true);
       try {
         if (selectedMedicine) {
           // ✅ Edit existing
@@ -143,6 +144,8 @@ function Medicines() {
       } catch (err) {
         console.error("Error:", err);
         setServerError(err.message);
+      } finally {
+        setSubmitting(false); // ✅ re-enable buttons
       }
     },
   });
@@ -392,8 +395,12 @@ function Medicines() {
           {serverError && <div className={styles.error}>{serverError}</div>}
 
           <div className={styles.buttonGroup}>
-            <button type="submit" className={styles.btn}>
-              Save
+            <button
+              type="submit"
+              className={styles.btn}
+              disabled={submitting} // ✅ disable while submitting
+            >
+              {submitting ? "Saving..." : "Save"}
             </button>
             <button
               type="button"

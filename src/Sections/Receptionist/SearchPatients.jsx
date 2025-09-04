@@ -13,6 +13,7 @@ export default function SearchPatients({
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [serverError, setServerError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
   const pageSize = 5;
 
   useEffect(() => {
@@ -90,10 +91,21 @@ export default function SearchPatients({
                     Edit
                   </button>
                   <button
-                    onClick={() => startVisit(patient.id)}
+                    onClick={async () => {
+                      try {
+                        setSubmitting(true); // 🔒 disable while starting
+                        await startVisit(patient.id);
+                      } catch (err) {
+                        alert("Failed to start visit: " + err.message);
+                      } finally {
+                        setSubmitting(false); // 🔓 re-enable
+                      }
+                    }}
                     className={`${styles.btn} ${styles.visitBtn}`}
+                    disabled={submitting} // ✅ disable while submitting
                   >
-                    Start Visit
+                    {submitting ? "Starting..." : "Start Visit"}{" "}
+                    {/* ✅ feedback */}
                   </button>
                   <button
                     className={`${styles.btn} ${styles.pastVisitsBtn}`}
@@ -164,6 +176,7 @@ export default function SearchPatients({
               onSubmit={async (e) => {
                 e.preventDefault();
                 setServerError("");
+                setSubmitting(true);
 
                 const updatedPatient = {
                   first_name: e.target.first_name.value,
@@ -180,7 +193,7 @@ export default function SearchPatients({
 
                 try {
                   const res = await fetch(
-                    `https://server.tripletsmediclinic.co.ke/${selectedPatient.id}`,
+                    `https://server.tripletsmediclinic.co.ke/patients/${selectedPatient.id}`,
                     {
                       method: "PATCH",
                       headers: { "Content-Type": "application/json" },
@@ -205,6 +218,8 @@ export default function SearchPatients({
                   fetchPatients();
                 } catch (error) {
                   setServerError(error.message || "Unexpected error occurred");
+                } finally {
+                  setSubmitting(false); // 🔓 re-enable
                 }
               }}
             >
@@ -256,8 +271,10 @@ export default function SearchPatients({
                   <button
                     type="submit"
                     className={`${styles.btn} ${styles.registerBtn}`}
+                    disabled={submitting} // ✅ disable submit
                   >
-                    Save Changes
+                    {submitting ? "Saving..." : "Save Changes"}{" "}
+                    {/* ✅ feedback */}
                   </button>
                   <button
                     type="button"

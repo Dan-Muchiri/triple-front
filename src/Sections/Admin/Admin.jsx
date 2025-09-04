@@ -11,6 +11,7 @@ import Medicines from "./Medicines";
 import Patients from "./Patients";
 import PatientInfo from "../Doctor/PatientInfo";
 import PharmacyExpenses from "./Expenses";
+import OtherExpenses from "./OtherExpenses";
 import AllSales from "./AllSales";
 
 const roles = [
@@ -39,6 +40,13 @@ function Admin() {
 
   const [showPassword, setShowPassword] = useState(false);
 
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [leaveUser, setLeaveUser] = useState(null);
+  const [leaveStart, setLeaveStart] = useState("");
+  const [leaveEnd, setLeaveEnd] = useState("");
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Redirect if not admin
   useEffect(() => {
     if (!isLoggedIn || userRole !== "admin") {
@@ -57,10 +65,6 @@ function Admin() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
   // ✅ fetch patients
   const fetchPatients = useCallback(async () => {
     try {
@@ -76,6 +80,7 @@ function Admin() {
     fetchUsers();
     fetchPatients(); // ✅ load patients when admin mounts
   }, [fetchUsers, fetchPatients]);
+
 
   // Formik for add/edit
   const formik = useFormik({
@@ -102,6 +107,7 @@ function Admin() {
     }),
     onSubmit: async (values) => {
       try {
+        setIsSubmitting(true);
         const method = selectedUser ? "PATCH" : "POST";
         const url = selectedUser
           ? `https://server.tripletsmediclinic.co.ke/users/${selectedUser.id}`
@@ -139,6 +145,8 @@ function Admin() {
       } catch (err) {
         console.error("Error saving user:", err);
         setServerError(err.message);
+      } finally {
+        setIsSubmitting(false);
       }
     },
   });
@@ -169,6 +177,51 @@ function Admin() {
       console.error("Error deleting user:", err);
     }
   };
+
+  const handleAddLeave = (user) => {
+    setLeaveUser(user);
+    setLeaveStart("");
+    setLeaveEnd("");
+    setActiveView("addLeave"); // 🔥 go to the new view
+  };
+
+  const submitLeave = async () => {
+    if (!leaveStart || !leaveEnd) {
+      alert("Please select both start and end dates");
+      return;
+    }
+    try {
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/leaveoffs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: leaveUser.id,
+          start_datetime: new Date(leaveStart).toISOString(),
+          end_datetime: new Date(leaveEnd).toISOString(),
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert("Failed: " + err.error);
+        return; // ❌ stop here, don’t leave modal
+      }
+
+      // ✅ success
+      await fetchUsers();
+      const updatedUser = await fetch(
+        `https://server.tripletsmediclinic.co.ke/users/${leaveUser.id}`
+      ).then((r) => r.json());
+
+      setLeaveUser(updatedUser); // refresh this user’s leaves
+      setActiveView("viewLeaves"); // go back to leaves
+      alert("Leave added successfully!");
+    } catch (err) {
+      console.error("Error adding leave:", err);
+      alert("Error adding leave");
+    }
+  };
+
   const handleMenuClick = (view) => {
     setActiveView(view);
     setSelectedUser(null);
@@ -176,8 +229,251 @@ function Admin() {
     setIsMenuOpen(false); // close menu on small screens
   };
 
+  const handleViewLeaves = (user) => {
+    setLeaveUser(user);
+    setActiveView("viewLeaves");
+  };
+  const now = new Date();
+
   const renderView = () => {
     switch (activeView) {
+      case "viewLeaves":
+        return (
+          <div className={styles.sectionBox}>
+            <h2 className={styles.sectionTitle}>
+              Leave History for {leaveUser?.first_name} {leaveUser?.last_name}
+            </h2>
+            <button
+              className={styles.btn}
+              onClick={() => handleAddLeave(leaveUser)}
+              style={{ marginBottom: "1rem" }}
+            >
+              Add Leave
+            </button>
+
+            {leaveUser?.leave_offs?.length > 0 ? (
+              <ul className={styles.patientList}>
+                {leaveUser.leave_offs.map((leave) => (
+                  <li key={leave.id} className={styles.patientCard}>
+                    <div>
+                      <strong>Type:</strong> {leave.type}
+                    </div>
+                    <div>
+                      <strong>Start:</strong>{" "}
+                      {new Date(leave.start_datetime).toLocaleString()}
+                    </div>
+                    <div>
+                      <strong>End:</strong>{" "}
+                      {new Date(leave.end_datetime).toLocaleString()}
+                    </div>
+                    <div>
+                      <strong>Status:</strong>{" "}
+                      {new Date(leave.start_datetime) > now ? (
+                        <span style={{ color: "blue" }}>Upcoming</span>
+                      ) : leave.is_active ? (
+                        <span style={{ color: "red" }}>Active</span>
+                      ) : (
+                        "Completed"
+                      )}
+                    </div>
+                    <div className={styles.buttonGroup}>
+                      <button
+                        className={styles.btn}
+                        onClick={() => {
+                          setLeaveStart(
+                            new Date(leave.start_datetime)
+                              .toISOString()
+                              .slice(0, 16)
+                          );
+                          setLeaveEnd(
+                            new Date(leave.end_datetime)
+                              .toISOString()
+                              .slice(0, 16)
+                          );
+                          setLeaveUser({ ...leaveUser, editingLeave: leave });
+                          setActiveView("editLeave");
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className={`${styles.btn} ${styles.cancelBtn}`}
+                        disabled={isSubmitting}
+                        onClick={async () => {
+                          if (!window.confirm("Delete this leave?")) return;
+                          setIsSubmitting(true);
+                          try {
+                            await fetch(
+                              `https://server.tripletsmediclinic.co.ke/leaveoffs/${leave.id}`,
+                              {
+                                method: "DELETE",
+                              }
+                            );
+                            const updatedUser = await fetch(
+                              `https://server.tripletsmediclinic.co.ke/users/${leaveUser.id}`
+                            ).then((r) => r.json());
+                            setLeaveUser(updatedUser);
+                            await fetchUsers();
+                          } finally {
+                            setIsSubmitting(false);
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No leave records found.</p>
+            )}
+
+            <div className={styles.buttonGroup}>
+              <button
+                className={`${styles.btn} ${styles.cancelBtn}`}
+                onClick={() => setActiveView("userList")}
+              >
+                Back
+              </button>
+            </div>
+          </div>
+        );
+
+      case "editLeave":
+        return (
+          <form className={styles.sectionBox}>
+            <h2 className={styles.sectionTitle}>
+              Edit Leave for {leaveUser?.first_name} {leaveUser?.last_name}
+            </h2>
+
+            <div className={styles.formGroup}>
+              <label>Start Date/Time</label>
+              <input
+                type="datetime-local"
+                value={leaveStart}
+                onChange={(e) => setLeaveStart(e.target.value)}
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>End Date/Time</label>
+              <input
+                type="datetime-local"
+                value={leaveEnd}
+                onChange={(e) => setLeaveEnd(e.target.value)}
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.buttonGroup}>
+              <button
+                type="button"
+                className={styles.btn}
+                disabled={isSubmitting} // ✅ disable while submitting
+                onClick={async () => {
+                  setIsSubmitting(true); // ✅ start
+                  try {
+                    const res = await fetch(
+                      `https://server.tripletsmediclinic.co.ke/leaveoffs/${leaveUser.editingLeave.id}`,
+                      {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          start_datetime: new Date(leaveStart).toISOString(),
+                          end_datetime: new Date(leaveEnd).toISOString(),
+                        }),
+                      }
+                    );
+
+                    if (!res.ok) {
+                      const err = await res.json();
+                      alert("Failed: " + err.error);
+                      return;
+                    }
+
+                    const updatedUser = await fetch(
+                      `https://server.tripletsmediclinic.co.ke/users/${leaveUser.id}`
+                    ).then((r) => r.json());
+
+                    await fetchUsers();
+
+                    setLeaveUser(updatedUser);
+                    setActiveView("viewLeaves");
+                  } catch (err) {
+                    console.error("Error updating leave:", err);
+                    alert("Error updating leave");
+                  } finally {
+                    setIsSubmitting(false); // ✅ end
+                  }
+                }}
+              >
+                {isSubmitting ? "Saving..." : "Save"} {/* ✅ feedback */}
+              </button>
+
+              <button
+                type="button"
+                className={`${styles.btn} ${styles.cancelBtn}`}
+                onClick={() => setActiveView("viewLeaves")}
+                disabled={isSubmitting} // ✅ block cancel while saving
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        );
+
+      case "addLeave":
+        return (
+          <form className={styles.sectionBox}>
+            <h2 className={styles.sectionTitle}>
+              Add Leave for {leaveUser?.first_name} {leaveUser?.last_name}
+            </h2>
+
+            <div className={styles.formGroup}>
+              <label>Start Date/Time</label>
+              <input
+                type="datetime-local"
+                value={leaveStart}
+                onChange={(e) => setLeaveStart(e.target.value)}
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>End Date/Time</label>
+              <input
+                type="datetime-local"
+                value={leaveEnd}
+                onChange={(e) => setLeaveEnd(e.target.value)}
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.buttonGroup}>
+              <button
+                type="button"
+                className={styles.btn}
+                disabled={isSubmitting}
+                onClick={async () => {
+                  await submitLeave();
+                }}
+              >
+                Save
+              </button>
+
+              <button
+                type="button"
+                className={`${styles.btn} ${styles.cancelBtn}`}
+                onClick={() => setActiveView("viewLeaves")}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        );
+
       case "addUser":
       case "editUser":
         return (
@@ -265,7 +561,11 @@ function Admin() {
             {serverError && <div className={styles.error}>{serverError}</div>}
 
             <div className={styles.buttonGroup}>
-              <button type="submit" className={styles.btn}>
+              <button
+                disabled={isSubmitting}
+                type="submit"
+                className={styles.btn}
+              >
                 Save
               </button>
               <button
@@ -294,6 +594,8 @@ function Admin() {
         );
       case "expenses":
         return <PharmacyExpenses />;
+      case "otherexpenses":
+        return <OtherExpenses />;
       case "patients":
         return (
           <Patients
@@ -338,6 +640,17 @@ function Admin() {
                     <div>
                       Created: {new Date(user.created_at).toLocaleString()}
                     </div>
+
+                    <div>
+                      Working Status:{" "}
+                      {user.active_leave ? (
+                        <span style={{ color: "red" }}>On Leave</span>
+                      ) : (
+                        <span style={{ color: "green" }}>Active</span>
+                      )}
+                    </div>
+
+                    {/* Optional: button to add leave */}
                     <div className={styles.buttonGroup}>
                       <button
                         className={styles.btn}
@@ -345,6 +658,13 @@ function Admin() {
                       >
                         Edit
                       </button>
+                      <button
+                        className={styles.btn}
+                        onClick={() => handleViewLeaves(user)}
+                      >
+                        View Leaves
+                      </button>
+
                       <button
                         className={`${styles.btn} ${styles.cancelBtn}`}
                         onClick={() => handleDeleteUser(user.id)}
@@ -414,6 +734,14 @@ function Admin() {
             onClick={() => handleMenuClick("expenses")}
           >
             Pharmacy Expenses
+          </button>
+          <button
+            className={`${styles.navBtn} ${
+              activeView === "otherexpenses" ? styles.active : ""
+            }`}
+            onClick={() => handleMenuClick("otherexpenses")}
+          >
+            Other Expenses
           </button>
 
           <button

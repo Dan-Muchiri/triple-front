@@ -3,41 +3,24 @@ import styles from "../Labtech/LabtechStyles.module.css";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-function PharmacyExpenses() {
-  const [medicines, setMedicines] = useState([]);
-  const [filteredMedicines, setFilteredMedicines] = useState([]);
+function OtherExpenses() {
   const [expenses, setExpenses] = useState([]);
   const [serverError, setServerError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
   const [showNewModal, setShowNewModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 🔹 Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
 
-  // Fetch medicines
-  useEffect(() => {
-    const fetchMedicines = async () => {
-      try {
-        const res = await fetch("https://server.tripletsmediclinic.co.ke/medicines");
-        const data = await res.json();
-        setMedicines(data);
-        setFilteredMedicines(data);
-      } catch (err) {
-        console.error("Failed to fetch medicines:", err);
-      }
-    };
-    fetchMedicines();
-  }, []);
-
-  // Fetch expenses
+  // Fetch other expenses
   const fetchExpenses = async () => {
     try {
-      const res = await fetch("https://server.tripletsmediclinic.co.ke/pharmacy_expenses");
+      const res = await fetch("https://server.tripletsmediclinic.co.ke/other_expenses");
       const data = await res.json();
       setExpenses(data);
     } catch (err) {
-      console.error("Failed to fetch expenses:", err);
+      console.error("Failed to fetch other expenses:", err);
     }
   };
 
@@ -45,67 +28,46 @@ function PharmacyExpenses() {
     fetchExpenses();
   }, []);
 
-  // Filter medicines for autocomplete
-  useEffect(() => {
-    setFilteredMedicines(
-      medicines.filter((m) =>
-        m.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-  }, [searchTerm, medicines]);
-
-  // ✅ Formik for adding expense
+  // ✅ Formik for adding new other expense
   const formik = useFormik({
     initialValues: {
-      medicine_id: "",
-      quantity_added: 0,
-      total_cost: 0,
+      expense_type: "",
+      quantity: "",
+      amount: 0,
     },
     validationSchema: Yup.object({
-      medicine_id: Yup.string().required("Medicine is required"),
-      quantity_added: Yup.number()
-        .min(1, "Quantity must be at least 1")
-        .required("Quantity is required"),
-      total_cost: Yup.number()
-        .min(0, "Total cost must be non-negative")
-        .required("Total cost is required"),
+      expense_type: Yup.string().required("Expense type is required"),
+      quantity: Yup.string().nullable(),
+      amount: Yup.number()
+        .min(0, "Amount must be non-negative")
+        .required("Amount is required"),
     }),
-    onSubmit: async (values, { resetForm, setSubmitting }) => {
+    onSubmit: async (values, { resetForm }) => {
+      setIsSubmitting(true);
       try {
-        const res = await fetch("https://server.tripletsmediclinic.co.ke/pharmacy_expenses", {
+        const res = await fetch("https://server.tripletsmediclinic.co.ke/other_expenses", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(values),
         });
         if (!res.ok) {
           const errData = await res.json();
-          setServerError(errData.error || "Failed to add expense");
+          setServerError(errData.error || "Failed to add other expense");
           return;
         }
         resetForm();
-        setSearchTerm("");
         setServerError("");
         setShowNewModal(false);
         await fetchExpenses();
-        alert("Pharmacy expense added successfully!");
+        alert("Other expense added successfully!");
       } catch (err) {
         console.error(err);
         setServerError(err.message);
       } finally {
-        setSubmitting(false); // ✅ ensures button unlocks
+        setIsSubmitting(false); // ✅ re-enable
       }
     },
   });
-
-  const selectedMedicine = medicines.find(
-    (m) => m.id === parseInt(formik.values.medicine_id)
-  );
-
-  const handleSelectMedicine = (medicine) => {
-    formik.setFieldValue("medicine_id", medicine.id);
-    setSearchTerm(medicine.name);
-    setFilteredMedicines([]);
-  };
 
   // 🔹 Pagination for expenses
   const totalPages = Math.ceil(expenses.length / pageSize);
@@ -116,7 +78,7 @@ function PharmacyExpenses() {
 
   return (
     <div className={styles.sectionBox}>
-      <h2 className={styles.sectionTitle}>Pharmacy Expenses</h2>
+      <h2 className={styles.sectionTitle}>Other Expenses</h2>
 
       {/* ✅ New Expense Button */}
       {!showNewModal && (
@@ -128,7 +90,7 @@ function PharmacyExpenses() {
             formik.resetForm();
           }}
         >
-          + Add New Expense
+          + Add New Other Expense
         </button>
       )}
 
@@ -136,25 +98,23 @@ function PharmacyExpenses() {
       {!showNewModal && (
         <>
           {currentExpenses.length === 0 ? (
-            <p>No expenses found.</p>
+            <p>No other expenses found.</p>
           ) : (
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Medicine</th>
-                  <th>Buying Price</th>
-                  <th>Quantity Added</th>
-                  <th>Total Cost</th>
+                  <th>Expense Type</th>
+                  <th>Quantity</th>
+                  <th>Amount (Ksh)</th>
                   <th>Date</th>
                 </tr>
               </thead>
               <tbody>
                 {currentExpenses.map((e) => (
                   <tr key={e.id}>
-                    <td>{e.medicine_name}</td>
-                    <td>{e.buying_price}</td>
-                    <td>{e.quantity_added}</td>
-                    <td>{e.total_cost}</td>
+                    <td>{e.expense_type}</td>
+                    <td>{e.quantity || "-"}</td>
+                    <td>{e.amount}</td>
                     <td>{new Date(e.created_at).toLocaleString()}</td>
                   </tr>
                 ))}
@@ -162,7 +122,6 @@ function PharmacyExpenses() {
             </table>
           )}
 
-          {/* Pagination */}
           {/* Pagination */}
           {totalPages > 1 && (
             <div className={styles.pagination}>
@@ -179,12 +138,11 @@ function PharmacyExpenses() {
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter(
                   (p) =>
-                    p === 1 || // always show first
-                    p === totalPages || // always show last
-                    (p >= currentPage - 1 && p <= currentPage + 1) // around current page
+                    p === 1 ||
+                    p === totalPages ||
+                    (p >= currentPage - 1 && p <= currentPage + 1)
                 )
                 .map((p, idx, arr) => {
-                  // insert ellipsis between non-contiguous pages
                   if (idx > 0 && arr[idx] !== arr[idx - 1] + 1) {
                     return (
                       <React.Fragment key={`ellipsis-${p}`}>
@@ -230,80 +188,48 @@ function PharmacyExpenses() {
       {/* ✅ Expense Form Modal */}
       {showNewModal && (
         <form onSubmit={formik.handleSubmit} className={styles.sectionBox}>
-          <h3>Add New Expense</h3>
+          <h3>Add New Other Expense</h3>
 
-          {/* Medicine autocomplete */}
+          {/* Expense Type */}
           <div className={styles.formGroup}>
-            <label>Medicine</label>
+            <label>Expense Type</label>
             <input
               type="text"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                formik.setFieldValue("medicine_id", "");
-              }}
-              placeholder="Type medicine name..."
+              name="expense_type"
+              value={formik.values.expense_type}
+              onChange={formik.handleChange}
               className={styles.input}
-              autoComplete="off"
             />
-            {filteredMedicines.length > 0 && searchTerm && (
-              <ul className={styles.autocompleteList}>
-                {filteredMedicines.slice(0, 5).map((med) => (
-                  <li
-                    key={med.id}
-                    onClick={() => handleSelectMedicine(med)}
-                    className={styles.autocompleteItem}
-                  >
-                    {med.name} (Stock: {med.stock}, Price: {med.buying_price})
-                  </li>
-                ))}
-              </ul>
-            )}
-            {formik.errors.medicine_id && (
-              <div className={styles.error}>{formik.errors.medicine_id}</div>
+            {formik.errors.expense_type && (
+              <div className={styles.error}>{formik.errors.expense_type}</div>
             )}
           </div>
-
-          {/* Buying Price (readonly) */}
-          {selectedMedicine && (
-            <div className={styles.formGroup}>
-              <label>Buying Price (Ksh)</label>
-              <input
-                type="number"
-                value={selectedMedicine.buying_price}
-                readOnly
-                className={styles.input}
-              />
-            </div>
-          )}
 
           {/* Quantity */}
           <div className={styles.formGroup}>
-            <label>Quantity Added</label>
+            <label>Quantity</label>
             <input
-              type="number"
-              name="quantity_added"
-              value={formik.values.quantity_added}
+              type="text"
+              name="quantity"
+              value={formik.values.quantity}
               onChange={formik.handleChange}
               className={styles.input}
+              placeholder='e.g. "500 units" or "7 kilos"'
             />
-            {formik.errors.quantity_added && (
-              <div className={styles.error}>{formik.errors.quantity_added}</div>
-            )}
           </div>
 
-          {/* Total Cost */}
+          {/* Amount */}
           <div className={styles.formGroup}>
-            <label>Total Cost (Ksh)</label>
+            <label>Amount (Ksh)</label>
             <input
               type="number"
-              name="total_cost"
-              value={formik.values.total_cost}
+              name="amount"
+              value={formik.values.amount}
               onChange={formik.handleChange}
               className={styles.input}
             />
-            {formik.errors.total_cost && (
-              <div className={styles.error}>{formik.errors.total_cost}</div>
+            {formik.errors.amount && (
+              <div className={styles.error}>{formik.errors.amount}</div>
             )}
           </div>
 
@@ -313,15 +239,14 @@ function PharmacyExpenses() {
             <button
               type="submit"
               className={styles.btn}
-              disabled={formik.isSubmitting} // ✅ disable during submit
+              disabled={isSubmitting}
             >
-              {formik.isSubmitting ? "Saving..." : "Save"}
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
             <button
               type="button"
               className={`${styles.btn} ${styles.cancelBtn}`}
               onClick={() => setShowNewModal(false)}
-              disabled={formik.isSubmitting} // ✅ prevent cancel mid-submit
             >
               Cancel
             </button>
@@ -332,4 +257,4 @@ function PharmacyExpenses() {
   );
 }
 
-export default PharmacyExpenses;
+export default OtherExpenses;
