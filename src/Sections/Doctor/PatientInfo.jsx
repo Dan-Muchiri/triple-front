@@ -47,9 +47,12 @@ function PatientInfo({ visitData, onBack }) {
       <div>
         <strong>Email:</strong> {patient.email}
       </div>
+      <div>
+        <strong>Sub County:</strong> {patient.subcounty || "N/A"}
+      </div>
       {/* ✅ Add Location */}
       <div>
-        <strong>Location:</strong> {patient.location || "N/A"}
+        <strong>Village:</strong> {patient.location || "N/A"}
       </div>
 
       {/* ✅ Add Next of Kin */}

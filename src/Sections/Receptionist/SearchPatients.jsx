@@ -189,6 +189,7 @@ export default function SearchPatients({
                   next_of_kin_name: e.target.next_of_kin_name.value, // ✅ NEW
                   next_of_kin_phone: e.target.next_of_kin_phone.value,
                   location: e.target.location.value,
+                  subcounty: e.target.subcounty.value,
                 };
 
                 try {
@@ -235,9 +236,14 @@ export default function SearchPatients({
                   "next_of_kin_name", // ✅ NEW
                   "next_of_kin_phone",
                   "location",
+                  "subcounty",
                 ].map((field) => (
                   <div key={field} className={styles.formGroup}>
-                    <label>{field.replaceAll("_", " ")}</label>
+                    <label>
+                      {field === "location"
+                        ? "Village" // ✅ Rename location → Village
+                        : field.replaceAll("_", " ")}
+                    </label>
                     {field === "gender" ? (
                       <select
                         name="gender"

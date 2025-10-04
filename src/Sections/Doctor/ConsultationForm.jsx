@@ -10,6 +10,7 @@ export default function ConsultationForm({
 }) {
   const [diagnosis, setDiagnosis] = useState("");
   const [chiefComplain, setChiefComplain] = useState("");
+  const [pastIllness, setPastIllness] = useState("");
   const [physicalExam, setPhysicalExam] = useState("");
   const [systemicExam, setSystemicExam] = useState("");
   const [notes, setNotes] = useState("");
@@ -93,6 +94,7 @@ export default function ConsultationForm({
         // Populate form fields
         setDiagnosis(data.diagnosis || "");
         setChiefComplain(data.chief_complain || "");
+        setPastIllness(data.past_illness || "");
         setPhysicalExam(data.physical_exam || "");
         setSystemicExam(data.systemic_exam || "");
         setNotes(data.notes || "");
@@ -414,6 +416,7 @@ export default function ConsultationForm({
           chief_complain: chiefComplain,
           physical_exam: physicalExam,
           systemic_exam: systemicExam,
+          past_illness: pastIllness,
           notes,
           stage: "completed",
         }),
@@ -466,6 +469,14 @@ export default function ConsultationForm({
         <textarea
           value={chiefComplain}
           onChange={(e) => setChiefComplain(e.target.value)}
+        />
+      </div>
+
+      <div className={styles.formGroup}>
+        <label>Past Illnesses</label>
+        <textarea
+          value={pastIllness}
+          onChange={(e) => setPastIllness(e.target.value)}
         />
       </div>
 

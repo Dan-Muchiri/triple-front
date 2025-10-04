@@ -26,6 +26,7 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
       next_of_kin_name: "", // ✅ new
       next_of_kin_phone: "",
       location: "",
+      subcounty: "", 
     },
 
     validationSchema: Yup.object({
@@ -39,6 +40,7 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
       next_of_kin_name: Yup.string(), // ✅ new
       next_of_kin_phone: Yup.string(),
       location: Yup.string(),
+      subcounty: Yup.string(),
     }),
 
     onSubmit: async (values, { resetForm }) => {
@@ -89,9 +91,16 @@ export default function RegisterPatient({ fetchPatients, setActiveView }) {
         "next_of_kin_name", // ✅ new
         "next_of_kin_phone",
         "location",
+        "subcounty",
       ].map((field) => (
         <div className={styles.formGroup} key={field}>
-          <label>{field.replace(/_/g, " ")}</label>
+          {/* ✅ Show Village for location */}
+          <label>
+            {field === "location"
+              ? "Village"
+              : field.replace(/_/g, " ")}
+          </label>
+
           {field === "gender" ? (
             <select
               name="gender"
